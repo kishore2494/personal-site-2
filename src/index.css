@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  body {
+    @apply bg-void-950 text-slate-200 font-sans antialiased;
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(52, 211, 255, 0.28);
+    color: #eafdff;
+  }
+
+  /* Slim cosmic scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #03040a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(#0a8fc0, #11b8ee);
+    border-radius: 999px;
+    border: 2px solid #03040a;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply border border-white/10 bg-white/[0.035] backdrop-blur-xl;
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300 hover:border-nebula-400/40 hover:bg-white/[0.06];
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-nebula-500 to-nebula-400 px-6 py-3 text-sm font-semibold text-void-950 shadow-glow transition-transform duration-300 hover:scale-[1.03] active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors duration-300 hover:border-nebula-400/60 hover:text-white;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-nebula-300 via-nebula-400 to-ember-300 bg-clip-text text-transparent;
+  }
+
+  .section-pad {
+    @apply mx-auto w-full max-w-content px-6 sm:px-8;
+  }
+
+  /* faint dotted grid used behind some panels */
+  .star-grid {
+    background-image: radial-gradient(rgba(127, 232, 255, 0.12) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+
+  /* CRT scanlines + vignette overlay (very subtle, never blocks input) */
+  .fx-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.018) 0px,
+        rgba(255, 255, 255, 0.018) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      radial-gradient(120% 120% at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.5) 100%);
+    mix-blend-mode: soft-light;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-overlay {
+      display: none;
+    }
+  }
+
+  /* mono kicker label, e.g. "01 / WHAT I DO" */
+  .kicker {
+    @apply font-mono text-xs uppercase tracking-[0.25em] text-nebula-400/80;
+  }
+
+  /* ── Rendered Markdown (blog / article body) ─────────────────────────── */
+  .article-body {
+    @apply text-[1.02rem] leading-[1.85] text-slate-300/90;
+  }
+  .article-body > * + * {
+    @apply mt-5;
+  }
+  .article-body h1,
+  .article-body h2,
+  .article-body h3,
+  .article-body h4 {
+    @apply font-display font-semibold text-white;
+    scroll-margin-top: 6rem;
+  }
+  .article-body h1 {
+    @apply mt-12 text-3xl;
+  }
+  .article-body h2 {
+    @apply mt-12 text-2xl;
+  }
+  .article-body h3 {
+    @apply mt-8 text-xl;
+  }
+  .article-body a {
+    @apply text-nebula-300 underline decoration-nebula-400/40 underline-offset-2 transition-colors hover:text-nebula-200;
+  }
+  .article-body strong {
+    @apply font-semibold text-white;
+  }
+  .article-body ul {
+    @apply list-disc space-y-2 pl-6 marker:text-nebula-400/70;
+  }
+  .article-body ol {
+    @apply list-decimal space-y-2 pl-6 marker:text-nebula-400/70;
+  }
+  .article-body blockquote {
+    @apply border-l-2 border-nebula-400/50 pl-5 italic text-slate-400;
+  }
+  .article-body img {
+    @apply mx-auto my-8 w-full rounded-2xl border border-white/10;
+  }
+  .article-body hr {
+    @apply my-10 border-white/10;
+  }
+  .article-body code {
+    @apply rounded bg-white/10 px-1.5 py-0.5 font-mono text-[0.85em] text-nebula-200;
+  }
+  .article-body pre {
+    @apply my-6 overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0e1a] p-5 text-sm leading-relaxed;
+  }
+  .article-body pre code {
+    @apply bg-transparent p-0 text-slate-200;
+  }
+  .article-body table {
+    @apply my-6 w-full border-collapse overflow-hidden rounded-xl text-sm;
+  }
+  .article-body th,
+  .article-body td {
+    @apply border border-white/10 px-3 py-2 text-left;
+  }
+  .article-body th {
+    @apply bg-white/5 text-white;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

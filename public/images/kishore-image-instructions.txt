@@ -1,0 +1,25 @@
+INSTRUCTIONS FOR ADDING YOUR IMAGE:
+
+1. Save your kishore.png image file to this exact location:
+   /Users/kishore/Documents/p/personal-site/public/images/kishore.png
+
+2. The file should be named exactly: kishore.png
+
+3. After saving the file, refresh your browser at http://localhost:4321
+
+4. Your image should now appear in the homepage banner!
+
+Current directory contents:
+- alok-logo.png
+- avatar1.jpg
+- avatar2.png
+- codes.jpg
+- graphics.jpg
+- pic01.jpg
+- sites.jpg
+- web.jpg
+- screens/ (directory)
+- theme/ (directory)
+- works/ (directory)
+
+Missing: kishore.png (this is what you need to add)

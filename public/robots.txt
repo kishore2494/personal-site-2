@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kishore2494.github.io/personal-site-2/sitemap.xml
