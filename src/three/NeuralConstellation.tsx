@@ -163,10 +163,10 @@ export default function NeuralConstellation({ nodeCount = 38, pulseCount = 16 })
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
 
-    // edges: subtle breathing opacity
+    // edges: clearly-visible breathing connections (reads as a neural net)
     if (lineRef.current) {
       const mat = lineRef.current.material as THREE.LineBasicMaterial;
-      mat.opacity = 0.16 + 0.06 * Math.sin(t * 0.8);
+      mat.opacity = 0.42 + 0.12 * Math.sin(t * 0.8);
     }
 
     // pulses travel along edges
@@ -204,9 +204,9 @@ export default function NeuralConstellation({ nodeCount = 38, pulseCount = 16 })
             />
           </bufferGeometry>
           <lineBasicMaterial
-            color="#3fbfe6"
+            color="#5fd2f5"
             transparent
-            opacity={0.18}
+            opacity={0.42}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
           />
@@ -221,7 +221,7 @@ export default function NeuralConstellation({ nodeCount = 38, pulseCount = 16 })
         {/* pulses */}
         <points ref={pulseRef} geometry={pulseGeo}>
           <pointsMaterial
-            size={0.7}
+            size={0.9}
             map={glowTex}
             vertexColors
             transparent

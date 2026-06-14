@@ -31,9 +31,9 @@ export default function SceneCanvas() {
   const quality = useMemo(detectQuality, []);
 
   const cfg = {
-    high: { stars: 4200, nodes: 42, pulses: 18, disk: 2800, debris: 14, comets: 4, field: 72, fieldPulses: 28, bloom: true, lite: false, dpr: [1, 2] as [number, number] },
-    medium: { stars: 2600, nodes: 32, pulses: 12, disk: 1700, debris: 10, comets: 3, field: 46, fieldPulses: 16, bloom: true, lite: true, dpr: [1, 1.6] as [number, number] },
-    low: { stars: 1400, nodes: 22, pulses: 7, disk: 900, debris: 6, comets: 0, field: 26, fieldPulses: 0, bloom: false, lite: true, dpr: [1, 1.3] as [number, number] },
+    high: { stars: 4200, nodes: 54, pulses: 24, disk: 2800, debris: 14, comets: 4, field: 72, fieldPulses: 28, bloom: true, lite: false, dpr: [1, 2] as [number, number] },
+    medium: { stars: 2600, nodes: 40, pulses: 16, disk: 1700, debris: 10, comets: 3, field: 46, fieldPulses: 16, bloom: true, lite: true, dpr: [1, 1.6] as [number, number] },
+    low: { stars: 1400, nodes: 26, pulses: 8, disk: 900, debris: 6, comets: 0, field: 26, fieldPulses: 0, bloom: false, lite: true, dpr: [1, 1.3] as [number, number] },
   }[quality];
 
   return (
