@@ -1,14 +1,11 @@
 ---
 title: "Bitchat: Your Phone Just Became a Rebel Radio"
 path: "/articles/bitchat-phone-rebel-radio/"
-date: 2025-07-16
-last_modified_at: 2025-07-16T12:00:00-05:00
+date: 2026-06-20
 excerpt: "*How Jack Dorsey’s Weird Little App Could Change Everything*"
 image: ""
-categories: ['Technology', 'Privacy', 'Communication']
-tags: ['AI', 'Mesh Networks', 'Twitter', 'Technology', 'News']
-toc: true
-featured: false
+categories: ["Technology","Privacy","Communication"]
+tags: ["AI","Mesh Networks","Twitter","Technology","News"]
 draft: false
 ---
 
@@ -25,7 +22,7 @@ Picture this: You’re in a blackout. No cell towers. No Wi-Fi. Just you, your p
 
 This isn’t another encrypted messenger. This is digital guerrilla warfare:
 
-- Zero infrastructure: Needs no internet, cell towers, or even your phone number
+- Zero infrastructure: Needs no internet, cell towers, or even your phone number.
 - Invisible networks: Phones whisper to each other via Bluetooth like kids passing notes
 - Censorship? Impossible: No central server to shut down. Just a ghost net of devices
 
