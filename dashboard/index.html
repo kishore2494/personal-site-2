@@ -74,10 +74,28 @@
         document.querySelectorAll(".tab").forEach((e) => e.classList.toggle("active", e.dataset.tab === t));
         ({ posts: renderPosts, projects: renderProjects, resume: renderResume, settings: renderSettings }[t])();
       }
+      // Save whatever editor is currently open, so Publish never misses edits.
+      async function saveCurrent() {
+        try {
+          if (tab === "posts" && $("t") && $("t").value.trim()) {
+            await api("/api/article", { method: "POST", body: JSON.stringify({ slug: cur, title: $("t").value, date: $("d").value, excerpt: $("ex").value, image: $("img").value, categories: $("c").value, tags: $("tg").value, draft: $("dr").checked, body: $("b").value }) });
+          } else if (tab === "projects" && $("pt") && $("pt").value.trim()) {
+            await api("/api/project", { method: "POST", body: JSON.stringify({ slug: cur || undefined, title: $("pt").value, year: $("py").value, category: $("pc").value, link: $("pl").value, blurb: $("pb").value, description: $("pd").value, tags: $("pg").value, featured: $("pf").checked }) });
+          } else if (tab === "resume" && $("r_summary")) {
+            await api("/api/resume", { method: "POST", body: JSON.stringify({ summary: $("r_summary").value, experience: JSON.parse($("r_experience").value), skills: JSON.parse($("r_skills").value), education: JSON.parse($("r_education").value), highlights: JSON.parse($("r_highlights").value) }) });
+          } else if (tab === "settings" && $("s_name")) {
+            const s = window._site;
+            await api("/api/settings", { method: "POST", body: JSON.stringify({ ...s, name: $("s_name").value, shortName: $("s_shortName").value, role: $("s_role").value, tagline: $("s_tagline").value, summary: $("s_summary").value, location: $("s_location").value, availability: $("s_availability").value, gtmId: $("s_gtmId").value, social: { ...s.social, email: $("soc_email").value, emailUrl: "mailto:" + $("soc_email").value, github: $("soc_github").value, linkedin: $("soc_linkedin").value, twitter: $("soc_twitter").value, whatsapp: $("soc_whatsapp").value }, foundations: $("s_foundations").value.split("\n").map((x) => x.trim()).filter(Boolean) }) });
+          }
+        } catch (e) { /* JSON fields validated on explicit Save */ }
+      }
       async function publish() {
-        toast("Publishing…");
+        toast("Saving & publishing…");
+        await saveCurrent();
         const r = await api("/api/publish", { method: "POST", body: JSON.stringify({ message: "content: update via dashboard" }) });
-        toast(r.ok ? "Published & pushed ✓ — site redeploys in ~2 min." : "Result:\n" + r.out);
+        if (r.ok) toast("Published & pushed ✓ — site redeploys in ~2 min.");
+        else if (/nothing to commit/i.test(r.out)) toast("No changes to publish — make an edit (and it auto-saves on publish).");
+        else toast("Result:\n" + r.out);
         refreshStatus();
       }
 
