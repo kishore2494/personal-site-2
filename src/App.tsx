@@ -17,6 +17,7 @@ import Articles from "@/pages/Articles";
 import ArticleDetail from "@/pages/ArticleDetail";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
+import Resume from "@/pages/Resume";
 import NotFound from "@/pages/NotFound";
 
 // Heavy WebGL layer — loaded after first paint so the UI is instant.
@@ -90,6 +91,7 @@ function PageTransitionRoutes({ location }: { location: ReturnType<typeof useLoc
         <Route path="/articles/:slug" element={<ArticleDetail />} />
         <Route path="/blog/:slug" element={<ArticleDetail />} />
         <Route path="/about" element={<About />} />
+        <Route path="/resume" element={<Resume />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

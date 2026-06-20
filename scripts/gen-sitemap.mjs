@@ -7,7 +7,7 @@ import { getArticles, getProjects } from "./data.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE_URL = "https://kishore2494.github.io/personal-site-2";
-const staticRoutes = ["/", "/projects", "/articles", "/about", "/contact"];
+const staticRoutes = ["/", "/projects", "/articles", "/about", "/resume", "/contact"];
 
 const articles = getArticles();
 const projects = await getProjects();

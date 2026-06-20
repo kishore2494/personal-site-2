@@ -185,3 +185,26 @@
     text-wrap: balance;
   }
 }
+
+/* Print: show only the résumé document, on white paper. */
+@media print {
+  body {
+    background: #fff !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  #cv,
+  #cv * {
+    visibility: visible !important;
+  }
+  #cv {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}

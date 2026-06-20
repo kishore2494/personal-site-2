@@ -20,6 +20,7 @@ export default function Footer() {
               <Link to="/projects" className="text-slate-400 transition-colors hover:text-white">Projects</Link>
               <Link to="/articles" className="text-slate-400 transition-colors hover:text-white">Writing</Link>
               <Link to="/about" className="text-slate-400 transition-colors hover:text-white">About</Link>
+              <Link to="/resume" className="text-slate-400 transition-colors hover:text-white">Résumé</Link>
               <Link to="/contact" className="text-slate-400 transition-colors hover:text-white">Contact</Link>
             </nav>
             <nav className="flex flex-col gap-2.5">

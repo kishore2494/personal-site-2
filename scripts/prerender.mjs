@@ -43,7 +43,7 @@ function page({ path, title, description, type = "website", image, jsonLd, conte
     .replace(/<link\s+rel="canonical"[^>]*>/i, "");
 
   const canonical = SITE + (path === "/" ? "/" : path);
-  const ogImage = image || `${SITE}/favicon.svg`;
+  const ogImage = image || `${SITE}/og.png`;
   const fullTitle = path === "/" ? title : `${title} · Kishore`;
 
   const head = `    <title>${esc(fullTitle)}</title>
@@ -150,6 +150,15 @@ const staticPages = [
     title: "Contact — Kishore Kumar A",
     description: "Get in touch with Kishore Kumar A about AI systems, deep-tech ideas, or collaboration.",
     contentHtml: `<h1 style="font-size:2rem;font-weight:700;color:#fff">Contact</h1><p style="margin-top:1rem">Email: akishorekumar2494@gmail.com</p>`,
+  },
+  {
+    path: "/resume",
+    title: "Résumé — Kishore Kumar A",
+    description:
+      "Résumé of Kishore Kumar A — founder & AI engineer: AI agents, RAG, multi-agent systems, LLM fine-tuning, and deep-tech ambitions.",
+    type: "profile",
+    jsonLd: personLd,
+    contentHtml: `<h1 style="font-size:2rem;font-weight:700;color:#fff">Résumé — ${esc(NAME)}</h1><p style="margin-top:1rem">Founder · AI Engineer · Deep-Tech Explorer</p><p style="margin-top:.5rem">${esc(SUMMARY)}</p>`,
   },
 ];
 

@@ -43,7 +43,7 @@ export default function Seo({ title, description, image, type = "website", jsonL
   useEffect(() => {
     const fullTitle = pathname === "/" ? title : `${title} · ${site.shortName}`;
     const canonical = site.url + (pathname === "/" ? "" : pathname);
-    const ogImage = image ?? `${site.url}/favicon.svg`;
+    const ogImage = image ?? `${site.url}/og.png`;
 
     document.title = fullTitle;
     upsertMeta('meta[name="description"]', "name", "description", description);
