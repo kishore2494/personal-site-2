@@ -21,8 +21,8 @@ const AMBER = new THREE.Color("#ffb454");
 
 // Classic feed-forward shape: input → hidden layers → output.
 const LAYERS = [4, 7, 9, 7, 3];
-const WIDTH = 8;
-const HEIGHT = 6.2;
+const WIDTH = 9.8;
+const HEIGHT = 7.6;
 
 type Built = {
   pos: THREE.Vector3[];

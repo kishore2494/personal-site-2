@@ -62,7 +62,7 @@ export default function SceneCanvas() {
           {/* stations — the camera flies between these per route.
               Home's neural net is offset to the right so the hero text on the
               left stays clear (camera still looks at the origin). */}
-          <group position={[6, 0.8, 0]}>
+          <group position={[6.8, 0.8, 0]}>
             <NeuralNetwork pulseCount={cfg.pulses} />
           </group>
           <group position={STATIONS.projects}>

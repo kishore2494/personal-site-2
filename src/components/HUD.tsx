@@ -1,6 +1,20 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { sceneState } from "@/three/scene-state";
+import Typing from "@/components/Typing";
+
+// Foundational ML works the neural net "processes" — signals domain depth.
+const PAPERS = [
+  '"Attention Is All You Need"',
+  "Transformers",
+  "self-attention",
+  "RAG · retrieval-augmented",
+  "Mixture-of-Experts",
+  "RLHF",
+  "chain-of-thought",
+  "diffusion models",
+  "neural scaling laws",
+];
 
 const STATION: Record<string, { label: string; sub: string }> = {
   "/": { label: "NEURAL CORE", sub: "sector 00 · origin" },
@@ -67,6 +81,15 @@ export default function HUD() {
         </div>
         <div className="mt-2 text-ember-300/80">▸ {station.label}</div>
         <div className="text-slate-500">{station.sub}</div>
+
+        {pathname === "/" && (
+          <div className="mt-3 max-w-[240px] text-slate-500">
+            <div>┗ knowledge base</div>
+            <div className="text-nebula-300/80">
+              ▸ processing <Typing phrases={PAPERS} className="text-nebula-200" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* bottom-left telemetry */}

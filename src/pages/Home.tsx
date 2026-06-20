@@ -51,6 +51,22 @@ const stack = [
   "LLM fine-tuning", "Voice AI", "TypeScript", "React", "Three.js", "OpenAPI", "Vector DBs",
 ];
 
+// Foundational papers / architectures — shown in the homepage ticker to signal depth.
+const foundations = [
+  "Attention Is All You Need",
+  "Transformers",
+  "Self-Attention",
+  "RAG",
+  "Mixture-of-Experts",
+  "RLHF",
+  "Chain-of-Thought",
+  "Diffusion Models",
+  "Neural Scaling Laws",
+  "LoRA Fine-Tuning",
+  "Vector Embeddings",
+  "Multi-Agent Systems",
+];
+
 const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -236,6 +252,26 @@ export default function Home() {
               <span className="ml-1 inline-block h-3.5 w-2 translate-y-0.5 animate-blink bg-nebula-400" />
             </Terminal>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ---------- FOUNDATIONS TICKER ---------- */}
+      <section className="relative z-10 mt-20 overflow-hidden border-y border-white/10 bg-white/[0.02] py-4">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-void-950 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-void-950 to-transparent" />
+        <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
+          {[0, 1].map((dup) => (
+            <ul key={dup} aria-hidden={dup === 1} className="flex shrink-0 items-center font-mono text-sm">
+              {foundations.map((f) => (
+                <li key={f} className="flex items-center whitespace-nowrap">
+                  <span className={f === "Attention Is All You Need" ? "text-nebula-300" : "text-slate-400"}>
+                    {f === "Attention Is All You Need" ? `"${f}"` : f}
+                  </span>
+                  <span className="mx-7 text-nebula-400/40">◦</span>
+                </li>
+              ))}
+            </ul>
+          ))}
         </div>
       </section>
 
