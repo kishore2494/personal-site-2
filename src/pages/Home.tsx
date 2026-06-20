@@ -257,7 +257,12 @@ export default function Home() {
 
       {/* ---------- FOUNDATIONS TICKER ---------- */}
       <section className="relative z-10 mt-20 overflow-hidden border-y border-white/10 bg-white/[0.02] py-4">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-void-950 to-transparent" />
+        {/* pinned label so the strip is self-explanatory */}
+        <div className="absolute left-0 top-0 z-20 flex h-full items-center gap-2 bg-void-950 pl-6 pr-5 font-mono text-xs uppercase tracking-widest text-nebula-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-nebula-400 shadow-glow" />
+          Foundations
+          <span className="ml-3 hidden h-4 w-px bg-white/15 sm:block" />
+        </div>
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-void-950 to-transparent" />
         <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
           {[0, 1].map((dup) => (

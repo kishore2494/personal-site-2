@@ -34,3 +34,6 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# local Claude Code config (machine-local, never published)
+.claude/settings.local.json

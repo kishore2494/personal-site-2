@@ -109,7 +109,7 @@ export default function NeuralNetwork({ pulseCount = 26 }: { pulseCount?: number
     return Array.from({ length: pulseCount }, () => ({
       edge: data.inputEdges[Math.floor(rand() * data.inputEdges.length)],
       t: rand(),
-      speed: 0.4 + rand() * 0.5,
+      speed: 0.55 + rand() * 0.75,
     }));
   }, [pulseCount, data.inputEdges]);
 
@@ -214,9 +214,9 @@ export default function NeuralNetwork({ pulseCount = 26 }: { pulseCount?: number
 
         <points ref={pulseRef} geometry={pulseGeo}>
           <pointsMaterial
-            size={0.78}
+            size={1.05}
             map={glow}
-            color="#cdf3ff"
+            color="#e8faff"
             transparent
             sizeAttenuation
             depthWrite={false}
