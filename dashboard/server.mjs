@@ -18,7 +18,13 @@ import fm from "front-matter";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const ARTICLES = join(ROOT, "src/content/articles");
+const PROJECTS = join(ROOT, "src/data/projects.json");
+const RESUME = join(ROOT, "src/data/resume.json");
+const SITE = join(ROOT, "src/config/site.json");
 const PORT = 4321;
+
+const readJSON = (p) => JSON.parse(readFileSync(p, "utf8"));
+const writeJSON = (p, o) => writeFileSync(p, JSON.stringify(o, null, 2) + "\n");
 
 const slugify = (s) =>
   s
@@ -140,15 +146,62 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
+    // ── Projects ──────────────────────────────────────────────────────────
+    if (path === "/api/projects" && req.method === "GET") return send(res, 200, readJSON(PROJECTS));
+
+    if (path === "/api/project" && req.method === "POST") {
+      const p = await readBody(req);
+      const slug = p.slug || slugify(p.title || "untitled");
+      const proj = {
+        slug,
+        title: p.title || "Untitled",
+        blurb: p.blurb || "",
+        description: p.description || "",
+        year: Number(p.year) || new Date().getFullYear(),
+        category: p.category || "AI",
+        tags: toList(p.tags),
+        featured: Boolean(p.featured),
+        ...(p.link ? { link: p.link } : {}),
+      };
+      const arr = readJSON(PROJECTS);
+      const i = arr.findIndex((x) => x.slug === slug);
+      if (i >= 0) arr[i] = proj;
+      else arr.push(proj);
+      writeJSON(PROJECTS, arr);
+      return send(res, 200, { ok: true, slug });
+    }
+
+    if (path.startsWith("/api/project/") && req.method === "DELETE") {
+      const slug = decodeURIComponent(path.slice("/api/project/".length));
+      writeJSON(PROJECTS, readJSON(PROJECTS).filter((x) => x.slug !== slug));
+      return send(res, 200, { ok: true });
+    }
+
+    // ── Résumé ────────────────────────────────────────────────────────────
+    if (path === "/api/resume" && req.method === "GET") return send(res, 200, readJSON(RESUME));
+    if (path === "/api/resume" && req.method === "POST") {
+      const body = await readBody(req);
+      writeJSON(RESUME, body);
+      return send(res, 200, { ok: true });
+    }
+
+    // ── Settings (site.json) ──────────────────────────────────────────────
+    if (path === "/api/settings" && req.method === "GET") return send(res, 200, readJSON(SITE));
+    if (path === "/api/settings" && req.method === "POST") {
+      const body = await readBody(req);
+      writeJSON(SITE, body);
+      return send(res, 200, { ok: true });
+    }
+
     if (path === "/api/status" && req.method === "GET") {
-      const { out } = await run("git status --porcelain src/content public");
+      const { out } = await run("git status --porcelain src/content src/data src/config public");
       return send(res, 200, { changes: out.trim().split("\n").filter(Boolean).length, detail: out.trim() });
     }
 
     if (path === "/api/publish" && req.method === "POST") {
       const { message } = await readBody(req);
       const msg = (message || "content: update via dashboard").replace(/"/g, "'");
-      const r = await run(`git add -A src/content public && git commit -m "${msg}" && git push`);
+      const r = await run(`git add -A src/content src/data src/config public && git commit -m "${msg}" && git push`);
       return send(res, 200, r);
     }
 

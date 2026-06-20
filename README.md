@@ -66,6 +66,25 @@ SPA deep-link fallback for client-side routing on GitHub Pages.
   and it loads automatically; add GA4/ads through GTM.
 - **Note:** full static prerendering (SSG) is the next SEO step — see below.
 
+## Admin dashboard (local CMS)
+
+Run a local admin board to manage everything — no cloud account:
+
+```bash
+npm run dashboard      # → http://localhost:4321
+```
+
+Tabs:
+- **Posts** — create / edit / delete blog articles (Markdown in `src/content/articles/`).
+- **Projects** — structured editor over `src/data/projects.json`.
+- **Résumé** — edits `src/data/resume.json` (drives `/resume` + the PDF).
+- **Settings** — identity, social links, GTM id and the homepage foundations
+  ticker (`src/config/site.json`).
+
+Hit **Publish (commit & push)** and it commits the content and pushes — the
+GitHub Pages workflow then redeploys automatically (~2 min). All content is
+plain JSON / Markdown in the repo, so it's fully yours and version-controlled.
+
 ## Project structure
 
 ```

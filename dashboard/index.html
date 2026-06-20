@@ -2,128 +2,200 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Content Dashboard — Kishore</title>
+    <title>Admin · Kishore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root { color-scheme: dark; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #03040a; color: #cbd5e1; }
-      header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #1c2333; position: sticky; top: 0; background: #05060d; z-index: 5; }
-      header b { color: #fff; }
-      .dot { color: #34d3ff; }
-      .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 57px); }
-      aside { border-right: 1px solid #1c2333; padding: 14px; overflow-y: auto; max-height: calc(100vh - 57px); }
-      .item { padding: 9px 11px; border-radius: 9px; cursor: pointer; font-size: 13px; }
-      .item:hover { background: #11182a; }
-      .item.active { background: #14223a; color: #fff; }
-      .item small { display: block; color: #64748b; font-size: 11px; margin-top: 2px; }
-      .badge { font-size: 10px; color: #ffb454; border: 1px solid #5a4420; border-radius: 5px; padding: 0 5px; }
-      main { padding: 22px 26px; overflow-y: auto; max-height: calc(100vh - 57px); }
-      label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin: 14px 0 5px; }
-      input, textarea { width: 100%; background: #0a0e1a; border: 1px solid #1c2333; border-radius: 9px; color: #e2e8f0; padding: 10px 12px; font-size: 14px; font-family: inherit; }
-      textarea { min-height: 360px; resize: vertical; font-family: ui-monospace, monospace; line-height: 1.55; }
-      .row { display: flex; gap: 12px; } .row > div { flex: 1; }
-      button { cursor: pointer; border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 13px; }
+      header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #1c2333; position: sticky; top: 0; background: #05060d; z-index: 5; }
+      header b { color: #fff; } .dot { color: #34d3ff; }
+      .tabs { display: flex; gap: 6px; }
+      .tab { padding: 7px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; color: #94a3b8; border: 1px solid transparent; }
+      .tab.active { background: #14223a; color: #fff; border-color: #244e63; }
+      .bar { display: flex; gap: 10px; align-items: center; }
+      .muted { color: #64748b; font-size: 12px; }
+      button { cursor: pointer; border: 0; border-radius: 999px; padding: 8px 15px; font-weight: 600; font-size: 13px; }
       .primary { background: linear-gradient(90deg, #11b8ee, #34d3ff); color: #03040a; }
       .ghost { background: #11182a; color: #cbd5e1; border: 1px solid #1c2333; }
       .danger { background: #2a1115; color: #ff9aa2; border: 1px solid #5a2027; }
       .pub { background: linear-gradient(90deg, #ff9417, #ffb454); color: #03040a; }
-      .bar { display: flex; gap: 10px; align-items: center; }
-      .toast { position: fixed; bottom: 18px; right: 18px; background: #0c1424; border: 1px solid #1c2333; border-radius: 10px; padding: 12px 16px; font-size: 13px; max-width: 460px; white-space: pre-wrap; display: none; }
-      .chk { display: flex; align-items: center; gap: 7px; font-size: 13px; margin-top: 18px; }
-      .chk input { width: auto; }
-      h2 { color: #fff; margin: 0 0 4px; }
-      .muted { color: #64748b; font-size: 12px; }
+      .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 55px); }
+      aside { border-right: 1px solid #1c2333; padding: 12px; overflow-y: auto; max-height: calc(100vh - 55px); }
+      .item { padding: 9px 11px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+      .item:hover { background: #11182a; } .item.active { background: #14223a; color: #fff; }
+      .item small { display: block; color: #64748b; font-size: 11px; margin-top: 2px; }
+      .badge { font-size: 10px; color: #ffb454; border: 1px solid #5a4420; border-radius: 5px; padding: 0 5px; }
+      main { padding: 20px 26px; overflow-y: auto; max-height: calc(100vh - 55px); }
+      label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #64748b; margin: 14px 0 5px; }
+      input, textarea, select { width: 100%; background: #0a0e1a; border: 1px solid #1c2333; border-radius: 9px; color: #e2e8f0; padding: 9px 12px; font-size: 14px; font-family: inherit; }
+      textarea { min-height: 120px; resize: vertical; font-family: ui-monospace, monospace; line-height: 1.5; font-size: 13px; }
+      textarea.body { min-height: 340px; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; } .row > div { flex: 1; min-width: 160px; }
+      .chk { display: flex; align-items: center; gap: 7px; font-size: 13px; margin-top: 16px; } .chk input { width: auto; }
+      h2 { color: #fff; margin: 0 0 4px; } .full { grid-column: 1 / -1; }
+      .toast { position: fixed; bottom: 18px; right: 18px; background: #0c1424; border: 1px solid #1c2333; border-radius: 10px; padding: 12px 16px; font-size: 13px; max-width: 480px; white-space: pre-wrap; display: none; z-index: 9; }
     </style>
   </head>
   <body>
     <header>
-      <div>Content <b>Dashboard</b><span class="dot">.</span> <span class="muted" id="status"></span></div>
       <div class="bar">
-        <button class="ghost" onclick="newPost()">+ New post</button>
-        <button class="pub" onclick="publish()">Publish (commit & push)</button>
+        <span>Admin <b>Board</b><span class="dot">.</span></span>
+        <div class="tabs">
+          <div class="tab active" data-tab="posts" onclick="setTab('posts')">Posts</div>
+          <div class="tab" data-tab="projects" onclick="setTab('projects')">Projects</div>
+          <div class="tab" data-tab="resume" onclick="setTab('resume')">Résumé</div>
+          <div class="tab" data-tab="settings" onclick="setTab('settings')">Settings</div>
+        </div>
+      </div>
+      <div class="bar">
+        <span class="muted" id="status"></span>
+        <button class="pub" onclick="publish()">Publish (commit &amp; push)</button>
       </div>
     </header>
-    <div class="layout">
-      <aside id="list"></aside>
-      <main>
-        <h2 id="editing">New post</h2>
-        <div class="muted" id="slug"></div>
-        <label>Title</label>
-        <input id="title" oninput="onTitle()" placeholder="My great post" />
-        <div class="row">
-          <div><label>Date</label><input id="date" type="date" /></div>
-          <div><label>Categories (comma-sep)</label><input id="categories" placeholder="AI, Tutorial" /></div>
-        </div>
-        <div class="row">
-          <div><label>Tags (comma-sep)</label><input id="tags" placeholder="Python, RAG" /></div>
-          <div><label>Cover image URL (optional)</label><input id="image" placeholder="https://…" /></div>
-        </div>
-        <label>Excerpt</label>
-        <input id="excerpt" placeholder="One-line summary" />
-        <label>Body (Markdown)</label>
-        <textarea id="body" placeholder="# Heading&#10;&#10;Write your post in Markdown…"></textarea>
-        <label class="chk"><input id="draft" type="checkbox" /> Draft (hidden from the site)</label>
-        <div class="bar" style="margin-top:18px">
-          <button class="primary" onclick="save()">Save</button>
-          <button class="danger" onclick="del()">Delete</button>
-          <span class="muted" id="saved"></span>
-        </div>
-      </main>
-    </div>
+    <div id="app"></div>
     <div class="toast" id="toast"></div>
 
     <script>
-      let current = null; // slug being edited, or null for new
       const $ = (id) => document.getElementById(id);
+      const app = $("app");
       const slugify = (s) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
-      const toast = (m) => { const t = $("toast"); t.textContent = m; t.style.display = "block"; setTimeout(() => (t.style.display = "none"), 4000); };
+      const esc = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+      const toast = (m) => { const t = $("toast"); t.textContent = m; t.style.display = "block"; setTimeout(() => (t.style.display = "none"), 5000); };
+      const api = (u, opt) => fetch(u, opt).then((r) => r.json());
+      let tab = "posts", cur = null;
 
-      async function loadList() {
-        const items = await (await fetch("/api/articles")).json();
-        $("list").innerHTML = items.map((a) =>
-          `<div class="item ${a.slug === current ? "active" : ""}" onclick="edit('${a.slug}')">
-             <div>${a.title} ${a.draft ? '<span class="badge">draft</span>' : ""}</div>
-             <small>${a.date} · ${a.categories.join(", ")}</small>
-           </div>`).join("");
-        const s = await (await fetch("/api/status")).json();
-        $("status").textContent = s.changes ? `· ${s.changes} unpublished change(s)` : "· all published";
+      async function refreshStatus() {
+        const s = await api("/api/status");
+        $("status").textContent = s.changes ? `${s.changes} unpublished change(s)` : "all published ✓";
       }
-
-      function fill(a) {
-        $("title").value = a.title || ""; $("date").value = a.date || new Date().toISOString().slice(0,10);
-        $("categories").value = (a.categories || []).join(", "); $("tags").value = (a.tags || []).join(", ");
-        $("image").value = a.image || ""; $("excerpt").value = a.excerpt || ""; $("body").value = a.body || "";
-        $("draft").checked = !!a.draft;
-        $("editing").textContent = a.slug ? "Editing: " + a.title : "New post";
-        $("slug").textContent = a.slug ? "/articles/" + a.slug : "(slug from title on save)";
-      }
-      function newPost() { current = null; fill({}); loadList(); }
-      async function edit(slug) { current = slug; fill(await (await fetch("/api/article/" + slug)).json()); loadList(); }
-      function onTitle() { if (!current) $("slug").textContent = "/articles/" + slugify($("title").value || ""); }
-
-      async function save() {
-        const data = {
-          slug: current, title: $("title").value, date: $("date").value, excerpt: $("excerpt").value,
-          image: $("image").value, categories: $("categories").value, tags: $("tags").value,
-          draft: $("draft").checked, body: $("body").value,
-        };
-        const r = await (await fetch("/api/article", { method: "POST", body: JSON.stringify(data) })).json();
-        current = r.slug; $("saved").textContent = "Saved ✓ " + new Date().toLocaleTimeString();
-        loadList();
-      }
-      async function del() {
-        if (!current || !confirm("Delete this post?")) return;
-        await fetch("/api/article/" + current, { method: "DELETE" });
-        newPost();
+      function setTab(t) {
+        tab = t; cur = null;
+        document.querySelectorAll(".tab").forEach((e) => e.classList.toggle("active", e.dataset.tab === t));
+        ({ posts: renderPosts, projects: renderProjects, resume: renderResume, settings: renderSettings }[t])();
       }
       async function publish() {
-        $("saved").textContent = "Publishing…";
-        const r = await (await fetch("/api/publish", { method: "POST", body: JSON.stringify({ message: "content: update via dashboard" }) })).json();
-        toast(r.ok ? "Published & pushed ✓ — the site will redeploy in ~2 min." : "Push result:\n" + r.out);
-        $("saved").textContent = ""; loadList();
+        toast("Publishing…");
+        const r = await api("/api/publish", { method: "POST", body: JSON.stringify({ message: "content: update via dashboard" }) });
+        toast(r.ok ? "Published & pushed ✓ — site redeploys in ~2 min." : "Result:\n" + r.out);
+        refreshStatus();
       }
-      newPost();
+
+      /* ---------------- POSTS ---------------- */
+      async function renderPosts() {
+        const items = await api("/api/articles");
+        app.innerHTML = `<div class="layout"><aside>
+          <button class="ghost" style="width:100%;margin-bottom:10px" onclick="postEditor()">+ New post</button>
+          ${items.map((a) => `<div class="item ${a.slug === cur ? "active" : ""}" onclick="postEditor('${a.slug}')">
+            <div>${esc(a.title)} ${a.draft ? '<span class="badge">draft</span>' : ""}</div><small>${a.date}</small></div>`).join("")}
+        </aside><main id="ed"></main></div>`;
+        postEditor(cur);
+      }
+      async function postEditor(slug) {
+        cur = slug || null;
+        const a = slug ? await api("/api/article/" + slug) : { date: new Date().toISOString().slice(0,10) };
+        $("ed").innerHTML = `<h2>${slug ? "Edit post" : "New post"}</h2><div class="muted" id="pslug">${slug ? "/articles/" + slug : "(slug from title)"}</div>
+          <label>Title</label><input id="t" value="${esc(a.title)}">
+          <div class="row"><div><label>Date</label><input id="d" type="date" value="${a.date||""}"></div>
+          <div><label>Categories (comma)</label><input id="c" value="${esc((a.categories||[]).join(', '))}"></div></div>
+          <div class="row"><div><label>Tags (comma)</label><input id="tg" value="${esc((a.tags||[]).join(', '))}"></div>
+          <div><label>Cover image URL</label><input id="img" value="${esc(a.image)}"></div></div>
+          <label>Excerpt</label><input id="ex" value="${esc(a.excerpt)}">
+          <label>Body (Markdown)</label><textarea id="b" class="body">${esc(a.body)}</textarea>
+          <label class="chk"><input id="dr" type="checkbox" ${a.draft?"checked":""}> Draft</label>
+          <div class="bar" style="margin-top:16px"><button class="primary" onclick="savePost()">Save</button>
+          ${slug?'<button class="danger" onclick="delPost()">Delete</button>':""}<span class="muted" id="sv"></span></div>`;
+        if (!cur) $("t").addEventListener("input", () => { $("pslug").textContent = "/articles/" + slugify($("t").value || ""); });
+      }
+      async function savePost() {
+        const d = { slug: cur, title: $("t").value, date: $("d").value, excerpt: $("ex").value, image: $("img").value, categories: $("c").value, tags: $("tg").value, draft: $("dr").checked, body: $("b").value };
+        const r = await api("/api/article", { method: "POST", body: JSON.stringify(d) });
+        cur = r.slug; $("sv").textContent = "Saved ✓"; refreshStatus(); renderPosts();
+      }
+      async function delPost() { if (!confirm("Delete this post?")) return; await fetch("/api/article/" + cur, { method: "DELETE" }); cur = null; refreshStatus(); renderPosts(); }
+
+      /* ---------------- PROJECTS ---------------- */
+      async function renderProjects() {
+        const items = await api("/api/projects");
+        app.innerHTML = `<div class="layout"><aside>
+          <button class="ghost" style="width:100%;margin-bottom:10px" onclick="projEditor()">+ New project</button>
+          ${items.map((p) => `<div class="item ${p.slug === cur ? "active" : ""}" onclick="projEditor('${p.slug}')">
+            <div>${esc(p.title)} ${p.featured ? '<span class="badge">★</span>' : ""}</div><small>${p.category} · ${p.year}</small></div>`).join("")}
+        </aside><main id="ed"></main></div>`;
+        projEditor(cur);
+      }
+      async function projEditor(slug) {
+        cur = slug || null;
+        const items = await api("/api/projects");
+        const p = slug ? items.find((x) => x.slug === slug) : { year: new Date().getFullYear(), category: "AI", tags: [] };
+        const cats = ["AI","Web","Design","Tooling"];
+        $("ed").innerHTML = `<h2>${slug ? "Edit project" : "New project"}</h2><div class="muted">${slug ? "/projects/" + slug : "(slug from title)"}</div>
+          <label>Title</label><input id="pt" value="${esc(p.title)}">
+          <div class="row"><div><label>Year</label><input id="py" type="number" value="${p.year||""}"></div>
+          <div><label>Category</label><select id="pc">${cats.map(c=>`<option ${p.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
+          <div><label>Link (optional)</label><input id="pl" value="${esc(p.link)}"></div></div>
+          <label>Blurb (card one-liner)</label><input id="pb" value="${esc(p.blurb)}">
+          <label>Description (detail page)</label><textarea id="pd">${esc(p.description)}</textarea>
+          <label>Tags (comma)</label><input id="pg" value="${esc((p.tags||[]).join(', '))}">
+          <label class="chk"><input id="pf" type="checkbox" ${p.featured?"checked":""}> Featured (show on home)</label>
+          <div class="bar" style="margin-top:16px"><button class="primary" onclick="saveProj('${slug||""}')">Save</button>
+          ${slug?`<button class="danger" onclick="delProj('${slug}')">Delete</button>`:""}<span class="muted" id="sv"></span></div>`;
+      }
+      async function saveProj(slug) {
+        const d = { slug: slug||undefined, title: $("pt").value, year: $("py").value, category: $("pc").value, link: $("pl").value, blurb: $("pb").value, description: $("pd").value, tags: $("pg").value, featured: $("pf").checked };
+        const r = await api("/api/project", { method: "POST", body: JSON.stringify(d) });
+        cur = r.slug; refreshStatus(); renderProjects();
+      }
+      async function delProj(slug) { if (!confirm("Delete this project?")) return; await fetch("/api/project/" + slug, { method: "DELETE" }); cur = null; refreshStatus(); renderProjects(); }
+
+      /* ---------------- RÉSUMÉ ---------------- */
+      async function renderResume() {
+        const r = await api("/api/resume");
+        const ta = (k, v) => `<label>${k}</label><textarea id="r_${k}">${esc(JSON.stringify(v, null, 2))}</textarea>`;
+        app.innerHTML = `<main><h2>Résumé</h2><div class="muted">Edits src/data/resume.json — drives the /resume page + PDF.</div>
+          <label>Summary</label><textarea id="r_summary" style="min-height:90px">${esc(r.summary)}</textarea>
+          ${ta("experience", r.experience)} ${ta("skills", r.skills)} ${ta("education", r.education)} ${ta("highlights", r.highlights)}
+          <div class="bar" style="margin-top:16px"><button class="primary" onclick="saveResume()">Save</button><span class="muted" id="sv"></span></div></main>`;
+      }
+      async function saveResume() {
+        try {
+          const body = { summary: $("r_summary").value, experience: JSON.parse($("r_experience").value), skills: JSON.parse($("r_skills").value), education: JSON.parse($("r_education").value), highlights: JSON.parse($("r_highlights").value) };
+          await api("/api/resume", { method: "POST", body: JSON.stringify(body) });
+          $("sv").textContent = "Saved ✓"; refreshStatus();
+        } catch (e) { toast("Invalid JSON in one of the fields:\n" + e.message); }
+      }
+
+      /* ---------------- SETTINGS ---------------- */
+      async function renderSettings() {
+        const s = await api("/api/settings");
+        const f = (k, v) => `<div><label>${k}</label><input id="s_${k}" value="${esc(v)}"></div>`;
+        app.innerHTML = `<main><h2>Settings</h2><div class="muted">Edits src/config/site.json — identity, links, GTM, homepage ticker.</div>
+          <div class="row">${f("name", s.name)}${f("shortName", s.shortName)}</div>
+          <label>Role</label><input id="s_role" value="${esc(s.role)}">
+          <label>Tagline</label><input id="s_tagline" value="${esc(s.tagline)}">
+          <label>Summary</label><textarea id="s_summary" style="min-height:80px">${esc(s.summary)}</textarea>
+          <div class="row">${f("location", s.location)}${f("availability", s.availability)}${f("gtmId", s.gtmId)}</div>
+          <h2 style="margin-top:22px;font-size:16px">Social</h2>
+          ${(() => { const sf = (label, key, v) => `<div><label>${label}</label><input id="soc_${key}" value="${esc(v)}"></div>`; return `
+          <div class="row">${sf("Email","email",s.social.email)}${sf("GitHub","github",s.social.github)}</div>
+          <div class="row">${sf("LinkedIn","linkedin",s.social.linkedin)}${sf("Twitter / X","twitter",s.social.twitter)}${sf("WhatsApp","whatsapp",s.social.whatsapp)}</div>`; })()}
+          <label>Homepage foundations ticker (one per line)</label><textarea id="s_foundations" style="min-height:130px">${esc((s.foundations||[]).join("\n"))}</textarea>
+          <div class="bar" style="margin-top:16px"><button class="primary" onclick="saveSettings()">Save</button><span class="muted" id="sv"></span></div></main>`;
+        window._site = s;
+      }
+      async function saveSettings() {
+        const s = window._site;
+        const v = (k) => $("s_" + k).value;
+        const body = { ...s, name: v("name"), shortName: v("shortName"), role: v("role"), tagline: v("tagline"), summary: v("summary"),
+          location: v("location"), availability: v("availability"), gtmId: v("gtmId"),
+          social: { ...s.social, email: $("soc_email").value, emailUrl: "mailto:" + $("soc_email").value, github: $("soc_github").value, linkedin: $("soc_linkedin").value, twitter: $("soc_twitter").value, whatsapp: $("soc_whatsapp").value },
+          foundations: $("s_foundations").value.split("\n").map((x) => x.trim()).filter(Boolean) };
+        await api("/api/settings", { method: "POST", body: JSON.stringify(body) });
+        $("sv").textContent = "Saved ✓"; refreshStatus();
+      }
+
+      setTab("posts");
+      refreshStatus();
     </script>
   </body>
 </html>

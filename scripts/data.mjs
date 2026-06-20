@@ -67,9 +67,7 @@ export function getArticles() {
     .sort((x, y) => (x.date < y.date ? 1 : -1));
 }
 
-export async function getProjects() {
-  const ts = readFileSync(join(root, "src/data/projects.ts"), "utf8");
-  const { code } = await transform(ts, { loader: "ts", format: "esm" });
-  const mod = await import("data:text/javascript;base64," + Buffer.from(code).toString("base64"));
-  return [...mod.projects].sort((a, b) => b.year - a.year);
+export function getProjects() {
+  const data = JSON.parse(readFileSync(join(root, "src/data/projects.json"), "utf8"));
+  return [...data].sort((a, b) => b.year - a.year);
 }

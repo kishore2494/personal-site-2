@@ -1,0 +1,179 @@
+[
+  {
+    "slug": "multi-agent-debating-system",
+    "title": "Autonomous Multi-Agent AI Debating Society",
+    "blurb": "A modular platform where AI agents debate autonomously using local LLMs and a custom PDF-based RAG pipeline.",
+    "description": "A debating arena where multiple autonomous agents argue, rebut and reach positions on their own. Each agent reasons over a shared knowledge base built from PDFs through a custom retrieval pipeline, running entirely on local models — no cloud dependency.",
+    "year": 2024,
+    "category": "AI",
+    "tags": [
+      "Python",
+      "Streamlit",
+      "Ollama",
+      "LangChain",
+      "ChromaDB",
+      "Multi-Agent"
+    ],
+    "featured": true
+  },
+  {
+    "slug": "rag-system",
+    "title": "Retrieval-Augmented Generation System",
+    "blurb": "Conversational AI using vector retrieval + LangChain orchestration to ground answers in real documents.",
+    "description": "A production-style RAG stack: documents are embedded into a vector index, retrieved by semantic similarity, and orchestrated through LangChain to generate accurate, context-aware responses with a local Ollama LLM — fast, private and verifiable.",
+    "year": 2024,
+    "category": "AI",
+    "tags": [
+      "LangChain",
+      "FAISS",
+      "Ollama",
+      "Python",
+      "Vector DBs",
+      "REST APIs"
+    ],
+    "featured": true
+  },
+  {
+    "slug": "tubelight-comm",
+    "title": "Tubelight Communications",
+    "blurb": "Multiple verticals: API design, website and SaaS delivery.",
+    "description": "End-to-end work across several product verticals — designing clean OpenAPI specs, shipping the marketing website, and building SaaS surfaces with proper API documentation.",
+    "year": 2021,
+    "category": "Web",
+    "tags": [
+      "API",
+      "OpenAPI",
+      "Documentation",
+      "Web Development"
+    ],
+    "featured": true
+  },
+  {
+    "slug": "textedu",
+    "title": "TextEdu",
+    "blurb": "An online SaaS for multi-channel messaging and analytics.",
+    "description": "A SaaS platform for multi-channel messaging with built-in analytics — covering app architecture, optimization and ongoing code review.",
+    "year": 2020,
+    "category": "Web",
+    "tags": [
+      "Web App",
+      "Optimization",
+      "Project Management"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "saas-guide",
+    "title": "SaaS Builder's Guide",
+    "blurb": "Getting started with building your own software-as-a-service platform.",
+    "description": "A practical guide to standing up a SaaS from zero — architecture, tooling, planning and the project-management discipline it takes to ship.",
+    "year": 2020,
+    "category": "Tooling",
+    "tags": [
+      "Software",
+      "Tutorials",
+      "Planning"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "deno-guide",
+    "title": "Guide to Deno",
+    "blurb": "Getting started with Deno — the hard and dirty way.",
+    "description": "A hands-on introduction to the Deno runtime and its TypeScript-first model, written for builders who learn by shipping.",
+    "year": 2020,
+    "category": "Tooling",
+    "tags": [
+      "Deno",
+      "TypeScript",
+      "Tutorials"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "expedite",
+    "title": "expediteJS",
+    "blurb": "A command-line PWA builder.",
+    "description": "A CLI that scaffolds and builds Progressive Web Apps quickly, removing boilerplate so you get to a working PWA in minutes.",
+    "year": 2018,
+    "category": "Tooling",
+    "tags": [
+      "Web Development",
+      "PWA",
+      "Design"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "harper-collins",
+    "title": "Websites for Harper Collins",
+    "blurb": "Custom marketing sites for new books and authors.",
+    "description": "A set of bespoke marketing microsites built to launch new books and authors — fast, responsive and design-led.",
+    "year": 2018,
+    "category": "Web",
+    "tags": [
+      "React",
+      "Web Development",
+      "Design"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "the-medley",
+    "title": "The Medley",
+    "blurb": "An online journal for a writers' group.",
+    "description": "A lightweight publishing platform for a writers' community, built on Jekyll with a custom editorial design.",
+    "year": 2018,
+    "category": "Web",
+    "tags": [
+      "Jekyll",
+      "Web Development",
+      "Design"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "vedanthems",
+    "title": "Vedanthems Nutratech",
+    "blurb": "Logo, packaging and website design for a foodtech startup.",
+    "description": "Full brand and digital identity for a nutrition startup — logo, packaging system and a marketing website.",
+    "year": 2021,
+    "category": "Design",
+    "tags": [
+      "Branding",
+      "Packaging",
+      "Startup",
+      "Web"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "the-gentleman-show",
+    "title": "The Gentleman Show",
+    "blurb": "Logo and production management for a podcast.",
+    "description": "Visual identity and production support for a podcast — logo system, graphics and the workflow behind the episodes.",
+    "year": 2022,
+    "category": "Design",
+    "tags": [
+      "Logo",
+      "Podcast",
+      "Production",
+      "Graphics"
+    ],
+    "featured": false
+  },
+  {
+    "slug": "web-experiments",
+    "title": "Web Experiments",
+    "blurb": "Eye-catching experiments with CSS, JS and motion.",
+    "description": "A playground of interactive CSS and JavaScript experiments exploring animation, motion and the edges of the browser.",
+    "year": 2017,
+    "category": "Web",
+    "tags": [
+      "CSS",
+      "JavaScript",
+      "Animation"
+    ],
+    "featured": false
+  }
+]

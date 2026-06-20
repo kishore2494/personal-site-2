@@ -1,0 +1,35 @@
+{
+  "name": "Kishore Kumar A",
+  "shortName": "Kishore",
+  "role": "Founder · AI Engineer · Deep-Tech Explorer",
+  "tagline": "Building the future of AI — and humanity's journey to the stars.",
+  "summary": "AI & Data Science graduate specializing in AI agents, LLM fine-tuning and RAG pipelines. Build-first by nature, with a long-term mission spanning AI, quantum computing and space exploration.",
+  "location": "India",
+  "availability": "Open to deep-tech & AI collaborations",
+  "url": "https://kishore2494.github.io/personal-site-2",
+  "gtmId": "",
+  "social": {
+    "email": "akishorekumar2494@gmail.com",
+    "emailUrl": "mailto:akishorekumar2494@gmail.com",
+    "github": "https://github.com/kishore2494",
+    "linkedin": "https://www.linkedin.com/in/kishore-kumar-11184a196/",
+    "twitter": "https://twitter.com/kishore2494",
+    "twitterHandle": "@kishore2494",
+    "whatsapp": "https://wa.me/919344901628"
+  },
+  "legacySiteUrl": "https://kishore2494.github.io/personal-site",
+  "foundations": [
+    "Attention Is All You Need",
+    "Transformers",
+    "Self-Attention",
+    "RAG",
+    "Mixture-of-Experts",
+    "RLHF",
+    "Chain-of-Thought",
+    "Diffusion Models",
+    "Neural Scaling Laws",
+    "LoRA Fine-Tuning",
+    "Vector Embeddings",
+    "Multi-Agent Systems"
+  ]
+}

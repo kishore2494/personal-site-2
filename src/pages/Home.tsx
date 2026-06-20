@@ -51,21 +51,9 @@ const stack = [
   "LLM fine-tuning", "Voice AI", "TypeScript", "React", "Three.js", "OpenAPI", "Vector DBs",
 ];
 
-// Foundational papers / architectures — shown in the homepage ticker to signal depth.
-const foundations = [
-  "Attention Is All You Need",
-  "Transformers",
-  "Self-Attention",
-  "RAG",
-  "Mixture-of-Experts",
-  "RLHF",
-  "Chain-of-Thought",
-  "Diffusion Models",
-  "Neural Scaling Laws",
-  "LoRA Fine-Tuning",
-  "Vector Embeddings",
-  "Multi-Agent Systems",
-];
+// Foundational papers / architectures — shown in the homepage ticker to signal
+// depth. Editable from the admin dashboard (Settings → site.json foundations).
+const foundations: string[] = site.foundations;
 
 const personJsonLd = {
   "@context": "https://schema.org",
