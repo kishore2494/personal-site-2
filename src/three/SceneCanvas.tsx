@@ -4,7 +4,7 @@ import * as THREE from "three";
 import Starfield from "./Starfield";
 import Nebula from "./Nebula";
 import NeuralField from "./NeuralField";
-import NeuralConstellation from "./NeuralConstellation";
+import NeuralNetwork from "./NeuralNetwork";
 import BlackHole from "./BlackHole";
 import Atom from "./Atom";
 import Planet from "./Planet";
@@ -63,7 +63,7 @@ export default function SceneCanvas() {
               Home's neural net is offset to the right so the hero text on the
               left stays clear (camera still looks at the origin). */}
           <group position={[6, 0.8, 0]}>
-            <NeuralConstellation nodeCount={cfg.nodes} pulseCount={cfg.pulses} />
+            <NeuralNetwork pulseCount={cfg.pulses} />
           </group>
           <group position={STATIONS.projects}>
             <Computer lite={cfg.lite} />
