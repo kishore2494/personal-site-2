@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "postbuild": "node scripts/prerender.mjs",
     "preview": "vite preview",
+    "dashboard": "node dashboard/server.mjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
