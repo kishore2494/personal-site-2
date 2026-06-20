@@ -74,7 +74,17 @@ export default function Home() {
       />
       {/* ---------- HERO ---------- */}
       <section className="relative flex min-h-[100svh] items-center">
-        <div className="section-pad w-full pt-28">
+        {/* left-side legibility gradient so hero text reads over the neural net,
+            fading to clear on the right where the animation lives */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(100deg, rgba(3,4,10,0.94) 0%, rgba(3,4,10,0.85) 28%, rgba(3,4,10,0.6) 48%, rgba(3,4,10,0.25) 64%, transparent 80%)",
+          }}
+        />
+        <div className="relative section-pad w-full pt-28">
           <motion.div
             initial="hidden"
             animate="show"

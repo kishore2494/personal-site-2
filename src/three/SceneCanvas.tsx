@@ -59,8 +59,10 @@ export default function SceneCanvas() {
           <FloatingDebris count={cfg.debris} />
           {cfg.comets > 0 && <Comets count={cfg.comets} />}
 
-          {/* stations — the camera flies between these per route */}
-          <group position={STATIONS.home}>
+          {/* stations — the camera flies between these per route.
+              Home's neural net is offset to the right so the hero text on the
+              left stays clear (camera still looks at the origin). */}
+          <group position={[6, 0.8, 0]}>
             <NeuralConstellation nodeCount={cfg.nodes} pulseCount={cfg.pulses} />
           </group>
           <group position={STATIONS.projects}>
