@@ -10,15 +10,18 @@ import HUD from "@/components/HUD";
 import BootSequence from "@/components/BootSequence";
 import { useSceneSync } from "@/hooks/useSceneSync";
 
-import Home from "@/pages/Home";
-import Projects from "@/pages/Projects";
-import ProjectDetail from "@/pages/ProjectDetail";
-import Articles from "@/pages/Articles";
-import ArticleDetail from "@/pages/ArticleDetail";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Resume from "@/pages/Resume";
-import NotFound from "@/pages/NotFound";
+import Home from "@/pages/Home"; // eager — the landing page
+
+// Lazy-load the rest so the home page doesn't ship the markdown renderer,
+// highlight.js, or detail-page code in the initial bundle.
+const Projects = lazy(() => import("@/pages/Projects"));
+const ProjectDetail = lazy(() => import("@/pages/ProjectDetail"));
+const Articles = lazy(() => import("@/pages/Articles"));
+const ArticleDetail = lazy(() => import("@/pages/ArticleDetail"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Resume = lazy(() => import("@/pages/Resume"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Heavy WebGL layer — loaded after first paint so the UI is instant.
 const SceneCanvas = lazy(() => import("@/three/SceneCanvas"));
@@ -83,6 +86,7 @@ export default function App() {
 function PageTransitionRoutes({ location }: { location: ReturnType<typeof useLocation> }) {
   return (
     <PageTransition>
+      <Suspense fallback={null}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/projects" element={<Projects />} />
@@ -95,6 +99,7 @@ function PageTransitionRoutes({ location }: { location: ReturnType<typeof useLoc
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </PageTransition>
   );
 }
