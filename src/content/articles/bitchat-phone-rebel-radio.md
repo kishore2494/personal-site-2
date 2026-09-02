@@ -7,6 +7,7 @@ image: ""
 categories: ["Technology","Privacy","Communication"]
 tags: ["AI","Mesh Networks","Twitter","Technology","News"]
 draft: false
+last_modified_at: 2026-06-20T12:00:00Z
 ---
 
 *How Jack Dorsey’s Weird Little App Could Change Everything*
