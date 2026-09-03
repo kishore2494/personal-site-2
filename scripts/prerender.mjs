@@ -6,6 +6,9 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import MarkdownIt from "markdown-it";
+import hljs from "highlight.js/lib/core";
+import hljsPython from "highlight.js/lib/languages/python";
+import hljsBash from "highlight.js/lib/languages/bash";
 import { getArticles, getProjects } from "./data.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -14,7 +17,30 @@ const SITE = "https://kishore2494.github.io/personal-site-2";
 const BASE = "/personal-site-2";
 const NAME = "Kishore Kumar A";
 
-const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+// Highlight code fences at PRERENDER time.
+//
+// Until now dist/ shipped zero hljs classes: highlighting only happened client-side, after
+// React hydrated. So a crawler saw unstyled code, and so did the reader until the JS landed
+// — on the article route that meant waiting for a 356 kB chunk before the page looked right.
+//
+// Only python and bash are registered, matching src/lib/rehypeHighlightMinimal.ts. lowlight
+// (what the client uses) is built on highlight.js, so both pipelines emit identical hljs-*
+// markup and the pre- and post-hydration renders agree. scripts/check-code-languages.mjs
+// guards the language list for both.
+hljs.registerLanguage("python", hljsPython);
+hljs.registerLanguage("bash", hljsBash);
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight(code, lang) {
+    if (!lang || !hljs.getLanguage(lang)) return "";   // unknown -> markdown-it escapes it plainly
+    const out = hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+    // Emit the wrapper ourselves so the class list matches the client's exactly.
+    return `<pre><code class="hljs language-${lang}">${out}</code></pre>`;
+  },
+});
 
 // Normalise body heading levels so an article's shallowest heading becomes <h2>.
 //
