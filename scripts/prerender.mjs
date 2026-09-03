@@ -27,6 +27,11 @@ const NAME = "Kishore Kumar A";
 // (what the client uses) is built on highlight.js, so both pipelines emit identical hljs-*
 // markup and the pre- and post-hydration renders agree. scripts/check-code-languages.mjs
 // guards the language list for both.
+//
+// Coverage: 8 highlighted code blocks across dist/ — exactly the 8 fences in the content
+// (5 python, 3 bash), plus 89 token spans inside them. (The commit that added this said
+// "0 -> 93"; that number came from a grep for `class="hljs` which also matches
+// `class="hljs-comment"`, so it conflated wrappers with tokens. 8 is the real block count.)
 hljs.registerLanguage("python", hljsPython);
 hljs.registerLanguage("bash", hljsBash);
 
