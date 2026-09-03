@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "dashboard": "node dashboard/server.mjs",
     "lint": "tsc --noEmit",
-    "audit": "node scripts/audit-dist.mjs --strict"
+    "audit": "node scripts/audit-dist.mjs --strict",
+    "verify:live": "node scripts/verify-live.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import MarkdownIt from "markdown-it";
+import { execSync } from "node:child_process";
 import hljs from "highlight.js/lib/core";
 import hljsPython from "highlight.js/lib/languages/python";
 import hljsBash from "highlight.js/lib/languages/bash";
@@ -77,6 +78,20 @@ function renderBody(src) {
 }
 const template = readFileSync(join(dist, "index.html"), "utf8");
 
+// Stamp the commit this build came from into every page.
+//
+// Deployment here is `on: push` to GitHub Pages, and that trigger cannot be trusted on its
+// own — the Daylog repo observed a push land and register NO workflow run at all, leaving the
+// site on the previous version while every command reported success. This site now also
+// receives content automatically (the Medium/Site-1 sync), so a silently stale deploy would
+// go unnoticed indefinitely. With the commit in the HTML, `npm run verify:live` can PROVE
+// what is actually being served instead of inferring it from a green push.
+const BUILD_COMMIT = (() => {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12);
+  try { return execSync("git rev-parse HEAD", { encoding: "utf8" }).trim().slice(0, 12); }
+  catch { return "unknown"; }
+})();
+
 const esc = (s) =>
   String(s || "")
     .replace(/&/g, "&amp;")
@@ -107,6 +122,7 @@ function page({ path, title, description, type = "website", image, jsonLd, conte
   const fullTitle = path === "/" ? title : `${title} · Kishore`;
 
   const head = `    <title>${esc(fullTitle)}</title>
+    <meta name="build-commit" content="${BUILD_COMMIT}" />
     <meta name="description" content="${esc(description)}" />
     <link rel="canonical" href="${canonical}" />
     <meta property="og:title" content="${esc(fullTitle)}" />
