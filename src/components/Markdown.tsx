@@ -1,8 +1,9 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import rehypeHighlight from "rehype-highlight";
+import rehypeHighlightMinimal from "@/lib/rehypeHighlightMinimal";
 import "highlight.js/styles/github-dark.css";
+
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -17,7 +18,7 @@ export default function Markdown({ children }: { children: string }) {
     <div className="article-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+        rehypePlugins={[rehypeRaw, rehypeHighlightMinimal]}
         urlTransform={urlTransform}
       >
         {children}
