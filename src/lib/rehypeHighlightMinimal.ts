@@ -14,8 +14,9 @@ import bash from "highlight.js/lib/languages/bash";
  * at runtime, not what gets *bundled*. That was the single biggest thing in the
  * ArticleDetail route.
  *
- * Every code fence across all 26 articles is `python` or `bash`, so only those two are
- * registered here. A fence in any other language still renders as plain text (auto
+ * Every code fence in the content set is `python` or `bash`, so only those two are
+ * registered here. Articles sync in automatically, so `scripts/check-code-languages.mjs`
+ * runs in prebuild and warns if a new post introduces a grammar that is not registered. A fence in any other language still renders as plain text (auto
  * detection stays off, matching rehype-highlight's default), so a future article using
  * something new degrades gracefully instead of breaking the page.
  */
