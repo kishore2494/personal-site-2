@@ -30,6 +30,12 @@ function toISO(d) {
   return String(d).slice(0, 10);
 }
 
+// Medium's export leaves inert anchors behind: `[](https://miro.medium.com/...)` with no
+// text and no image. They render as a link with no accessible name, which is a real a11y
+// error and pure noise. Articles sync in automatically, so strip them at load rather than
+// editing content that will be overwritten.
+const stripEmptyLinks = (md) => md.replace(/\[\]\([^)\s]*\)/g, "");
+
 function deriveExcerpt(excerpt, body) {
   const e = String(excerpt || "").replace(/^\*+|\*+$/g, "").trim();
   if (e) return e;
@@ -48,7 +54,8 @@ export function getArticles() {
     .filter((f) => f.endsWith(".md"))
     .map((f) => {
       const raw = readFileSync(join(dir, f), "utf8");
-      const { attributes: a, body } = fm(raw);
+      const { attributes: a, body: rawBody } = fm(raw);
+      const body = stripEmptyLinks(rawBody);
       const categories = toArray(a.categories);
       return {
         slug: f.replace(/\.md$/, ""),

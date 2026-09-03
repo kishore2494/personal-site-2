@@ -15,6 +15,35 @@ const BASE = "/personal-site-2";
 const NAME = "Kishore Kumar A";
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+
+// Normalise body heading levels so an article's shallowest heading becomes <h2>.
+//
+// The template below emits the title as the page's single <h1>. Articles sync in from
+// Medium, where `#` is how you write a SECTION heading, so bodies arrive full of <h1>s —
+// one article had 34, leaving crawlers and screen readers with no outline. But some
+// articles start at `##` instead, so a blind one-level demotion would push those to h3 and
+// jump straight from h1, which is its own a11y complaint. Shifting by (2 - shallowest)
+// handles both, and promotes an article that starts at `###`.
+//
+// This must live here as well as in src/lib/rehypeDemoteHeadings.ts because prerender uses
+// a SEPARATE markdown pipeline (markdown-it) from the app (react-markdown) — the HTML a
+// crawler actually receives is produced entirely by this file.
+function renderBody(src) {
+  const tokens = md.parse(src, {});
+  const levels = tokens.filter((t) => t.type === "heading_open").map((t) => Number(t.tag.slice(1)));
+  if (levels.length) {
+    const shift = 2 - Math.min(...levels);
+    if (shift !== 0) {
+      for (const t of tokens) {
+        if (t.type === "heading_open" || t.type === "heading_close") {
+          const lvl = Math.min(6, Math.max(2, Number(t.tag.slice(1)) + shift));
+          t.tag = `h${lvl}`;
+        }
+      }
+    }
+  }
+  return md.renderer.render(tokens, md.options, {});
+}
 const template = readFileSync(join(dist, "index.html"), "utf8");
 
 const esc = (s) =>
@@ -166,7 +195,7 @@ for (const p of staticPages) write(p.path, page(p));
 
 // ── article pages ─────────────────────────────────────────────────────────
 for (const a of articles) {
-  const bodyHtml = md.render(a.body).replace(/src="\/images\//g, `src="${BASE}/images/`);
+  const bodyHtml = renderBody(a.body).replace(/src="\/images\//g, `src="${BASE}/images/`);
   const cover = a.cover ? `<img src="${esc(a.cover)}" alt="${esc(a.title)}" style="max-width:100%;border-radius:1rem;margin:1rem 0" />` : "";
   const html = page({
     path: `/articles/${a.slug}`,

@@ -79,7 +79,12 @@ const files = import.meta.glob("./articles/*.md", {
 const allArticles: Article[] = Object.entries(files)
   .map(([path, raw]) => {
     const slug = path.split("/").pop()!.replace(/\.md$/, "");
-    const { attributes, body } = fm<RawAttrs>(raw);
+    // Medium's export leaves inert anchors behind: `[](https://miro.medium.com/...)` with
+    // no text and no image, which render as a link with no accessible name. Articles sync
+    // in automatically, so strip at load rather than editing content that gets overwritten.
+    // Mirrors stripEmptyLinks() in scripts/data.mjs, the prerender pipeline's loader.
+    const { attributes, body: rawBody } = fm<RawAttrs>(raw);
+    const body = rawBody.replace(/\[\]\([^)\s]*\)/g, "");
     const categories = toArray(attributes.categories);
     const words = body.split(/\s+/).length;
     return {

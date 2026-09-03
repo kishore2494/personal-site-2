@@ -8,10 +8,11 @@
     "dev": "vite",
     "prebuild": "node scripts/check-code-languages.mjs && node scripts/gen-sitemap.mjs",
     "build": "tsc --noEmit && vite build",
-    "postbuild": "node scripts/prerender.mjs",
+    "postbuild": "node scripts/prerender.mjs && node scripts/audit-dist.mjs",
     "preview": "vite preview",
     "dashboard": "node dashboard/server.mjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "audit": "node scripts/audit-dist.mjs --strict"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",
