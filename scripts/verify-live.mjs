@@ -19,7 +19,7 @@
 import { execSync } from "node:child_process";
 
 const SITE = "https://kishore2494.github.io/personal-site-2/";
-const TIMEOUT_MS = Number(process.env.VERIFY_TIMEOUT_MS ?? 180_000);
+const TIMEOUT_MS = Number(process.env.VERIFY_TIMEOUT_MS ?? 420_000);   // Pages builds here run past 3 min
 const POLL_MS = 10_000;
 
 const expected = (process.argv[2] ?? execSync("git rev-parse HEAD", { encoding: "utf8" }).trim()).slice(0, 12);
@@ -54,11 +54,32 @@ for (let attempt = 1; ; attempt++) {
     console.log(`  poll ${attempt}: ${e.message}`);
   }
   if (Date.now() > deadline) {
+    // Distinguish "no workflow ran" from "the workflow is simply still going". The first
+    // draft asserted the former and was wrong on its very first real run — a build WAS in
+    // progress, just slower than the timeout. Telling someone to re-run a workflow that is
+    // already running sends them to fix the wrong thing.
+    let diagnosis =
+      `The push may have landed without triggering a workflow run — check the Actions tab and\n` +
+      `re-run the Pages workflow manually (workflow_dispatch is enabled).`;
+    try {
+      const runs = JSON.parse(execSync(
+        `gh run list --repo kishore2494/personal-site-2 --limit 10 ` +
+        `--json status,conclusion,headSha`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }));
+      const mine = runs.find((r) => r.headSha.startsWith(expected));
+      if (!mine) {
+        diagnosis = `No workflow run exists for ${expected} — the push did NOT trigger one.\n` +
+                    `Re-run the Pages workflow manually (workflow_dispatch is enabled).`;
+      } else if (mine.status !== "completed") {
+        diagnosis = `The workflow for ${expected} is still ${mine.status} — this is a slow build,\n` +
+                    `not a missed trigger. Re-run with a longer VERIFY_TIMEOUT_MS.`;
+      } else if (mine.conclusion !== "success") {
+        diagnosis = `The workflow for ${expected} finished as ${mine.conclusion}. Note the repo uses\n` +
+                    `concurrency.cancel-in-progress, so a rapid follow-up push cancels the previous run.`;
+      }
+    } catch { /* gh unavailable — keep the generic guidance */ }
     console.error(
       `\nFAILED: after ${Math.round(TIMEOUT_MS / 1000)}s the live site is serving ` +
-      `${last ?? "an unreadable page"}, not ${expected}.\n` +
-      `The push may have landed without triggering a workflow run — check the Actions tab and\n` +
-      `re-run the Pages workflow manually (workflow_dispatch is enabled).`
+      `${last ?? "an unreadable page"}, not ${expected}.\n${diagnosis}`
     );
     process.exit(1);
   }
