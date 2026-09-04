@@ -19,7 +19,11 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const SITE = "https://kishore2494.github.io/personal-site-2/";
+// The URL is overridable so this script can be pointed at a fixture and TESTED. It is the last
+// gate before a deploy is called good — if its comparison were vacuous, every broken deploy
+// would pass — and until now nothing checked that it actually fails when it should. Production
+// and CI pass nothing and get the real site.
+const SITE = process.env.VERIFY_SITE ?? "https://kishore2494.github.io/personal-site-2/";
 const TIMEOUT_MS = Number(process.env.VERIFY_TIMEOUT_MS ?? 420_000);   // Pages builds here run past 3 min
 const POLL_MS = 10_000;
 
