@@ -19,6 +19,7 @@ import MarkdownIt from "markdown-it";
 import hljs from "highlight.js/lib/core";
 import hljsPython from "highlight.js/lib/languages/python";
 import hljsBash from "highlight.js/lib/languages/bash";
+import { outlineLevels } from "./heading-outline.mjs";
 
 // Highlight code fences at PRERENDER time.
 //
@@ -55,26 +56,19 @@ export const md = new MarkdownIt({
 // the GAPS: Medium authors use `#` and `###` and essentially never type `##`, so {1,3} became
 // {2,4} and the outline jumped h2 -> h4. The audit flagged that on five articles.
 //
-// The distinct levels present are now RANKED onto consecutive levels from h2 up: {1,3} -> {2,3},
-// {2,4} -> {2,3}, {1,2,4} -> {2,3,4}. Relative nesting is preserved exactly and the gaps are
-// gone. Ranks clamp at h6.
-//
-// Counterpart: src/lib/rehypeDemoteHeadings.ts. Both must implement the same rule, and
-// src/lib/__tests__/pipelineParity.test.tsx renders the same markdown through both to check it.
-export function normaliseLevels(levels) {
-  const distinct = [...new Set(levels)].sort((a, b) => a - b);
-  return new Map(distinct.map((lvl, i) => [lvl, Math.min(6, 2 + i)]));
-}
-
+// Heading normalisation lives in scripts/heading-outline.mjs and is shared with
+// src/lib/rehypeDemoteHeadings.ts, so the two pipelines cannot drift.
 export function renderBody(src) {
   const tokens = md.parse(src, {});
   const levels = tokens.filter((t) => t.type === "heading_open").map((t) => Number(t.tag.slice(1)));
   if (levels.length) {
-    const rank = normaliseLevels(levels);
+    // Positional, not by value: outlineLevels returns one rank per heading IN ORDER, so the
+    // close tag has to reuse the rank its open tag was given rather than look one up.
+    const ranks = outlineLevels(levels);
+    let i = -1;
     for (const t of tokens) {
-      if (t.type === "heading_open" || t.type === "heading_close") {
-        t.tag = `h${rank.get(Number(t.tag.slice(1)))}`;
-      }
+      if (t.type === "heading_open") t.tag = `h${ranks[++i]}`;
+      else if (t.type === "heading_close") t.tag = `h${ranks[i]}`;
     }
   }
   return md.renderer.render(tokens, md.options, {});

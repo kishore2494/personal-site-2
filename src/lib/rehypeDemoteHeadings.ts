@@ -1,4 +1,5 @@
 import { visit } from "unist-util-visit";
+import { outlineLevels } from "../../scripts/heading-outline.mjs";
 
 /** Map an article body's heading levels onto consecutive levels starting at h2.
  *
@@ -6,10 +7,8 @@ import { visit } from "unist-util-visit";
  * rule for the prerendered HTML, and src/lib/__tests__/pipelineParity.test.tsx renders the same
  * markdown through both to check they still agree.
  */
-export function normaliseLevels(levels: number[]): Map<number, number> {
-  const distinct = [...new Set(levels)].sort((a, b) => a - b);
-  return new Map(distinct.map((lvl, i) => [lvl, Math.min(6, 2 + i)]));
-}
+// The outline rule itself lives in scripts/heading-outline.mjs, shared with the prerender
+// pipeline so the two cannot disagree.
 
 /**
  * Normalise heading levels in an article body so it has a real outline under the page title.
@@ -40,10 +39,12 @@ export default function rehypeDemoteHeadings() {
       if (m) levels.push(Number(m[1]));
     });
     if (!levels.length) return;
-    const rank = normaliseLevels(levels);
+    // Positional: one rank per heading in document order, consumed in the same order.
+    const ranks = outlineLevels(levels);
+    let i = 0;
     visit(tree as never, "element", (node: { tagName?: string }) => {
       const m = /^h([1-6])$/.exec(node.tagName ?? "");
-      if (m) node.tagName = `h${rank.get(Number(m[1]))}`;
+      if (m) node.tagName = `h${ranks[i++]}`;
     });
   };
 }

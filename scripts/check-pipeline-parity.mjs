@@ -56,7 +56,10 @@ const clientHeadings = read("src/lib/rehypeDemoteHeadings.ts");
 // The shared rule marker. Was /2 - Math\.min/ while headings were SHIFTED; it is now a rank
 // map, and this had to move with it — a guard that greps for a vanished string reports
 // "implemented on neither side" and looks like a pass if you only read the exit code.
-const rule = /normaliseLevels/;
+// Match the CALL, not the identifier. Grepping for the bare name passes on a file that still
+// IMPORTS outlineLevels and no longer uses it — which is exactly how a mutation slipped past
+// this check, and the same trap the note above records for the last rule that went stale.
+const rule = /outlineLevels\s*\(/;
 const inPrerender = rule.test(prerender);
 const inClient = rule.test(clientHeadings);
 if (inPrerender !== inClient) {
@@ -64,7 +67,8 @@ if (inPrerender !== inClient) {
     "heading normalisation is implemented on only one side:\n" +
     `     scripts/markdown-pipeline.mjs: ${inPrerender ? "yes" : "NO"}\n` +
     `     src/lib/rehypeDemoteHeadings.ts: ${inClient ? "yes" : "NO"}\n` +
-    "     Both must rank heading levels onto consecutive levels starting at h2."
+    "     Both must import outlineLevels() from scripts/heading-outline.mjs — the rule is\n" +
+    "     order-sensitive, so two independent copies of it drift silently."
   );
 }
 
