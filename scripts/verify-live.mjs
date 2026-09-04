@@ -17,6 +17,7 @@
 // actually fail on it.
 
 import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const SITE = "https://kishore2494.github.io/personal-site-2/";
 const TIMEOUT_MS = Number(process.env.VERIFY_TIMEOUT_MS ?? 420_000);   // Pages builds here run past 3 min
@@ -38,6 +39,72 @@ async function liveCommit() {
   return m[1];
 }
 
+
+// The homepage is not the site.
+//
+// Everything above proves ONE page carries the expected commit. Prerendering exists so deep
+// links — 44 of them — serve real HTML with HTTP 200, which is what a crawler asks for. Pages
+// deploys one artifact atomically, so staleness is uniform and the homepage is a fair proxy for
+// THAT. It is not a proxy for those pages existing at all: a change to the content loader that
+// prerenders fewer routes leaves the homepage perfect while article URLs 404, and nothing here
+// would have noticed. audit-dist reports the resulting dead links, but a handful is not
+// systemic, so it does not block either.
+//
+// Sampled rather than exhaustive because this runs in the deploy path and 44 sequential fetches
+// is a minute of waiting. One of each shape, so a whole category disappearing is caught rather
+// than averaged away.
+async function verifyDeepLinks() {
+  let urls;
+  try {
+    const xml = readFileSync("dist/sitemap.xml", "utf8");
+    urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  } catch {
+    console.log("  (no dist/sitemap.xml — skipping the deep-link check; run this after a build)");
+    return;
+  }
+  if (!urls.length) {
+    console.error("FAILED: dist/sitemap.xml contains no <loc> entries");
+    process.exit(1);
+  }
+
+  const root = SITE.replace(/\/$/, "");
+  const pick = (re) => urls.find((u) => re.test(u));
+  const sample = [...new Set([
+    // A SLUG under each, not the index: /articles/ matches the listing page too, and the first
+    // version of this sampled that instead — checking the one route whose absence would be most
+    // obvious while the 26 article pages went unchecked.
+    pick(/\/articles\/[^/]+\//),
+    pick(/\/projects\/[^/]+\//),
+    urls.find((u) => !/\/(articles|projects)\//.test(u) && u.replace(/\/$/, "") !== root),
+    urls[urls.length - 1],
+  ].filter(Boolean))];
+
+  console.log(`checking ${sample.length} deep links of ${urls.length} in the sitemap`);
+  let bad = 0;
+  for (const u of sample) {
+    try {
+      const res = await fetch(`${u}${u.includes("?") ? "&" : "?"}cb=${Math.random().toString(36).slice(2)}`, {
+        cache: "no-store", signal: AbortSignal.timeout(15_000),
+      });
+      const html = res.ok ? await res.text() : "";
+      const commit = html.match(/<meta\s+name="build-commit"\s+content="([^"]+)"/i)?.[1];
+      const ok = res.ok && commit === expected;
+      console.log(`  ${ok ? "ok  " : "BAD "} ${res.status} ${commit ?? "no build-commit"}  ${u}`);
+      if (!ok) bad++;
+    } catch (e) {
+      console.log(`  BAD  ${e.message}  ${u}`);
+      bad++;
+    }
+  }
+  if (bad) {
+    console.error(`\nFAILED: ${bad} of ${sample.length} deep links are not serving ${expected}.\n` +
+      `The homepage IS current, so this is not a missed deploy — those routes were not\n` +
+      `prerendered, or the sitemap lists URLs the build no longer produces.`);
+    process.exit(1);
+  }
+  console.log("deep links: all sampled routes serve the expected build");
+}
+
 console.log(`expecting build-commit ${expected}`);
 const deadline = Date.now() + TIMEOUT_MS;
 let last = null;
@@ -47,6 +114,7 @@ for (let attempt = 1; ; attempt++) {
     last = await liveCommit();
     if (last === expected) {
       console.log(`LIVE: ${SITE} is serving ${last}`);
+      await verifyDeepLinks();
       process.exit(0);
     }
     console.log(`  poll ${attempt}: live is ${last}, waiting…`);
