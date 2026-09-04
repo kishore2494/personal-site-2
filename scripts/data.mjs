@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { transform } from "esbuild";
 import fm from "front-matter";
+import { retargetLegacy } from "./site-urls.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -35,6 +36,9 @@ function toISO(d) {
 // error and pure noise. Articles sync in automatically, so strip them at load rather than
 // editing content that will be overwritten.
 const stripEmptyLinks = (md) => md.replace(/\[\]\([^)\s]*\)/g, "");
+// Images migrated from site 1 still name site 1's base path. They live in this repo's
+// public/, and resolve today only because site 1 is still up serving copies. See
+// retargetLegacy() in scripts/site-urls.mjs. Mirrored in src/content/index.ts.
 
 function deriveExcerpt(excerpt, body) {
   const e = String(excerpt || "").replace(/^\*+|\*+$/g, "").trim();
@@ -55,7 +59,7 @@ export function getArticles() {
     .map((f) => {
       const raw = readFileSync(join(dir, f), "utf8");
       const { attributes: a, body: rawBody } = fm(raw);
-      const body = stripEmptyLinks(rawBody);
+      const body = retargetLegacy(stripEmptyLinks(rawBody));
       const categories = toArray(a.categories);
       return {
         slug: f.replace(/\.md$/, ""),
@@ -65,7 +69,7 @@ export function getArticles() {
         categories,
         tags: toArray(a.tags),
         theme: deriveTheme(categories),
-        cover: a.image && String(a.image).trim() ? a.image : "",
+        cover: a.image && String(a.image).trim() ? retargetLegacy(String(a.image)) : "",
         body,
         draft: Boolean(a.draft),
       };

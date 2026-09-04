@@ -20,10 +20,25 @@ const DIST = "dist";
 const BASE = (readFileSync("vite.config.ts", "utf8")
   .match(/const\s+BASE\s*=\s*["'`]([^"'`]+)["'`]/)?.[1] ?? "/")
   .replace(/\/$/, "");
+// dist/about/index.html -> "/about";  dist/index.html -> "/". The canonical form both the
+// sitemap check and the identity checks compare against.
+const pagePath = (rel) =>
+  ("/" + rel.replace(/index\.html$/, "").replace(/\.html$/, "")).replace(/\/+$/, "") || "/";
+// An absolute or relative URL reduced to the same form: origin off, base path off, no
+// trailing slash. Lets a canonical be compared with a file path without either format winning.
+const urlPath = (u) =>
+  (u.replace(/^https?:\/\/[^/]+/, "").replace(new RegExp("^" + BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), "")
+    .replace(/\/+$/, "")) || "/";
+
 const strict = process.argv.includes("--strict");
 const failSystemic = process.argv.includes("--fail-systemic");
 const errors = [];
 const warns = [];
+// Per-page SEO identity, collected for the cross-page checks below. A tag being PRESENT is
+// not the same as it being RIGHT: the classic prerender regression emits the template's
+// canonical on every page, which passes every presence check and tells Google the site is one
+// page wearing 45 hats.
+const identity = [];
 const err = (file, msg) => errors.push({ file, msg });
 const warn = (file, msg) => warns.push({ file, msg });
 
@@ -138,6 +153,70 @@ for (const file of files) {
   }
   if ((isArticle || isProject) && !/application\/ld\+json/i.test(html)) {
     warn(rel, `no JSON-LD structured data`);
+  }
+
+  // ---- and the tags must describe THIS page, not the template ----
+  // `self` is the URL this file is served at, derived from its path in dist/ the same way the
+  // sitemap check derives it. Comparing against that is the whole point: presence checks pass
+  // just as happily when all 45 pages claim to be the homepage.
+  const self = pagePath(rel);
+  if (canon) {
+    const c = urlPath(canon);
+    if (c !== self) {
+      err(rel, `canonical points at ${c}, but this page is served at ${self}`);
+    }
+  }
+  const ogUrl = meta("og:url");
+  if (ogUrl && canon && urlPath(ogUrl) !== urlPath(canon)) {
+    // Facebook/LinkedIn key their cache on og:url; if it disagrees with canonical, shares of
+    // this page resolve somewhere else entirely.
+    err(rel, `og:url (${urlPath(ogUrl)}) disagrees with canonical (${urlPath(canon)})`);
+  }
+  const ogImage = meta("og:image");
+  if (ogImage && !/^https?:\/\//i.test(ogImage)) {
+    // Every social crawler fetches og:image out of page context. A relative path is a 404 to
+    // them, which is indistinguishable from having no image at all.
+    err(rel, `og:image is relative and will not resolve for social crawlers: ${ogImage}`);
+  }
+  identity.push({ rel, self, canon: canon ? urlPath(canon) : null, title, desc: meta("description") });
+}
+
+// ---- the 45 pages must be 45 pages ----
+//
+// Checked across files rather than within one, because that is the only place this failure is
+// visible: each page individually looks perfect. Two pages sharing a canonical means Google is
+// told to index one and drop the other, and for this site that is the entire product.
+//
+// Structural, so it hard-fails like the sitemap check rather than waiting for --fail-systemic.
+// Content cannot trip it: two articles get two slugs and therefore two canonicals.
+{
+  const byCanon = new Map();
+  for (const p of identity) {
+    if (!p.canon) continue;
+    if (!byCanon.has(p.canon)) byCanon.set(p.canon, []);
+    byCanon.get(p.canon).push(p.rel);
+  }
+  const collided = [...byCanon].filter(([, v]) => v.length > 1);
+  if (collided.length) {
+    console.error(`\n\x1b[31m\u2717 ${collided.length} canonical URL(s) claimed by more than one page\x1b[0m`);
+    for (const [u, pages] of collided.slice(0, 5)) console.error(`   ${u}  <- ${pages.join(", ")}`);
+    console.error("   Only one of each set can be indexed. If this appeared after a prerender change,");
+    console.error("   the head is being rendered from the template rather than from the route.\n");
+    process.exit(1);
+  }
+  // Duplicate titles and descriptions are a softer version of the same problem: not an
+  // instruction to drop the page, but a reason for the crawler to treat two as one.
+  for (const field of ["title", "desc"]) {
+    const seen = new Map();
+    for (const p of identity) {
+      const v = p[field];
+      if (!v) continue;
+      if (!seen.has(v)) seen.set(v, []);
+      seen.get(v).push(p.rel);
+    }
+    for (const [v, pages] of seen) {
+      if (pages.length > 1) warn(pages[0], `${field} is identical to ${pages.length - 1} other page(s): "${v.slice(0, 50)}…"`);
+    }
   }
 }
 

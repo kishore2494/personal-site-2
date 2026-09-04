@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { execSync } from "node:child_process";
 import { getArticles, getProjects } from "./data.mjs";
 import { renderBody } from "./markdown-pipeline.mjs";
+import { canonicalFor, absoluteImage } from "./site-urls.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
@@ -59,8 +60,8 @@ function page({ path, title, description, type = "website", image, jsonLd, conte
   // Trailing slash on purpose: Pages serves these as directories and 301s the slashless
   // form, so a canonical without it pointed at a URL that redirects — which is exactly what
   // a canonical is supposed to resolve, not add to.
-  const canonical = SITE + (path === "/" ? "/" : path + "/");
-  const ogImage = image || `${SITE}/og.png`;
+  const canonical = canonicalFor(SITE, path);
+  const ogImage = absoluteImage(SITE, image);
   const fullTitle = path === "/" ? title : `${title} · Kishore`;
 
   const head = `    <title>${esc(fullTitle)}</title>

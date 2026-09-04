@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { canonicalFor, absoluteImage } from "../../scripts/site-urls.mjs";
 import { site } from "@/config/site";
 
 type Props = {
@@ -42,8 +43,10 @@ export default function Seo({ title, description, image, type = "website", jsonL
 
   useEffect(() => {
     const fullTitle = pathname === "/" ? title : `${title} · ${site.shortName}`;
-    const canonical = site.url + (pathname === "/" ? "" : pathname);
-    const ogImage = image ?? `${site.url}/og.png`;
+    // Shared with scripts/prerender.mjs so hydration cannot rewrite a correct
+    // prerendered canonical into the slashless form Pages redirects away from.
+    const canonical = canonicalFor(site.url, pathname);
+    const ogImage = absoluteImage(site.url, image);
 
     document.title = fullTitle;
     upsertMeta('meta[name="description"]', "name", "description", description);

@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import fm from "front-matter";
 import { projects as projectData, type Project } from "@/data/projects";
+import { retargetLegacy } from "../../scripts/site-urls.mjs";
 
 export type Theme = "AI" | "Cosmos" | "Build";
 
@@ -84,7 +85,9 @@ const allArticles: Article[] = Object.entries(files)
     // in automatically, so strip at load rather than editing content that gets overwritten.
     // Mirrors stripEmptyLinks() in scripts/data.mjs, the prerender pipeline's loader.
     const { attributes, body: rawBody } = fm<RawAttrs>(raw);
-    const body = rawBody.replace(/\[\]\([^)\s]*\)/g, "");
+    // Images migrated from site 1 still name site 1's base path; retarget them at load,
+    // exactly as scripts/data.mjs does. See retargetLegacy() in scripts/site-urls.mjs.
+    const body = retargetLegacy(rawBody.replace(/\[\]\([^)\s]*\)/g, ""));
     const categories = toArray(attributes.categories);
     const words = body.split(/\s+/).length;
     return {
@@ -95,7 +98,7 @@ const allArticles: Article[] = Object.entries(files)
       categories,
       tags: toArray(attributes.tags),
       theme: deriveTheme(categories),
-      cover: attributes.image && attributes.image.trim() ? attributes.image : undefined,
+      cover: attributes.image && attributes.image.trim() ? retargetLegacy(attributes.image) : undefined,
       body,
       readingMinutes: Math.max(1, Math.round(words / 200)),
       draft: Boolean(attributes.draft),

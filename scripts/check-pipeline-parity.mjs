@@ -81,8 +81,38 @@ if (inDataLoader !== inContentLoader) {
   );
 }
 
+// ── 4. the legacy-base retarget, declared in both loaders ─────────────────────
+// Same shape as the strip above: content migrated from site 1 names site 1's base path, and a
+// retarget in only one loader means the app and the prerendered HTML point at different images.
+const legacyRe = /retargetLegacy/;
+const inDataLegacy = legacyRe.test(read("scripts/data.mjs"));
+const inContentLegacy = legacyRe.test(read("src/content/index.ts"));
+if (inDataLegacy !== inContentLegacy) {
+  problems.push(
+    "the legacy base-path retarget is in only one loader:\n" +
+    `     scripts/data.mjs: ${inDataLegacy ? "yes" : "NO"}\n` +
+    `     src/content/index.ts: ${inContentLegacy ? "yes" : "NO"}\n` +
+    "     Both load article bodies; a retarget in one leaves the other pointing at site 1."
+  );
+}
+
+// ── 5. the head rules, which must be shared rather than merely equal ──────────
+// prerender.mjs and Seo.tsx both build canonical + og:image. They drifted once (trailing
+// slash), so they now import one implementation. This checks they still do, because a
+// re-inlined copy is exactly how the drift comes back.
+for (const f of ["scripts/prerender.mjs", "src/components/Seo.tsx"]) {
+  const src = read(f);
+  if (!/canonicalFor\s*\(/.test(src) || !/absoluteImage\s*\(/.test(src)) {
+    problems.push(
+      `${f} no longer uses the shared head rules from scripts/site-urls.mjs.\n` +
+      "     canonical and og:image must come from canonicalFor()/absoluteImage() in BOTH\n" +
+      "     pipelines — an inlined copy is how the trailing-slash bug returned last time."
+    );
+  }
+}
+
 if (problems.length === 0) {
-  console.log("pipeline parity: prerender and app agree (grammars, headings, link strip)");
+  console.log("pipeline parity: prerender and app agree (grammars, headings, link strip, legacy retarget, shared head rules)");
 } else {
   console.warn("\n\x1b[33m⚠ the two markdown pipelines have drifted:\x1b[0m");
   for (const p of problems) console.warn(`   ${p}`);
