@@ -54,13 +54,31 @@ async function liveCommit() {
 // is a minute of waiting. One of each shape, so a whole category disappearing is caught rather
 // than averaged away.
 async function verifyDeepLinks() {
-  let urls;
+  // Prefer the sitemap this build produced; fall back to the PUBLISHED one.
+  //
+  // The local file is the better source when it exists: it lists what the build intended, so a
+  // route that silently stopped being generated still gets asked for and still 404s. But this
+  // now also runs in CI right after deploy-pages, where there is a checkout and no dist/ — and
+  // the published sitemap is a perfectly good second-best, since every URL in it is still
+  // checked for the expected commit.
+  let urls, source;
   try {
     const xml = readFileSync("dist/sitemap.xml", "utf8");
     urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    source = "dist/sitemap.xml";
   } catch {
-    console.log("  (no dist/sitemap.xml — skipping the deep-link check; run this after a build)");
-    return;
+    try {
+      const res = await fetch(`${SITE}sitemap.xml?cb=${Math.random().toString(36).slice(2)}`, {
+        cache: "no-store", signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) throw new Error(`live sitemap returned ${res.status}`);
+      const xml = await res.text();
+      urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+      source = "the published sitemap";
+    } catch (e) {
+      console.error(`FAILED: no dist/sitemap.xml and could not fetch the published one — ${e.message}`);
+      process.exit(1);
+    }
   }
   if (!urls.length) {
     console.error("FAILED: dist/sitemap.xml contains no <loc> entries");
@@ -79,7 +97,7 @@ async function verifyDeepLinks() {
     urls[urls.length - 1],
   ].filter(Boolean))];
 
-  console.log(`checking ${sample.length} deep links of ${urls.length} in the sitemap`);
+  console.log(`checking ${sample.length} deep links of ${urls.length} from ${source}`);
   let bad = 0;
   for (const u of sample) {
     try {

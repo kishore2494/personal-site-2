@@ -73,3 +73,20 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # Prove the deploy instead of inferring it from a green workflow.
+      #
+      # `on: push` cannot be trusted on its own — the Daylog repo once saw a push land and
+      # register no workflow run at all, leaving the site on the previous version while every
+      # command reported success. Until now this repo had verify-live.mjs and nothing ran it:
+      # a stale or partial deploy was only visible if a human happened to check.
+      #
+      # Checkout only — the script uses Node builtins and global fetch, no npm install — and it
+      # falls back to the PUBLISHED sitemap when there is no dist/, so it checks the homepage
+      # and a sample of real deep links for the expected commit.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify the live site is serving this commit
+        run: node scripts/verify-live.mjs ${{ github.sha }}
