@@ -22,7 +22,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20. vitest 4 pulls esbuild 0.28.x, and npm 10 (which ships with Node 20)
+          # resolves that differently from npm 11 — `npm ci` failed there with
+          # "Missing: esbuild@0.28.2 from lock file" while succeeding locally. The toolchain
+          # moved on; CI had not.
+          node-version: 22
           cache: npm
 
       - run: npm ci
