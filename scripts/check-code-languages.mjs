@@ -19,6 +19,7 @@ const ALIASES = new Map([["py", "python"], ["sh", "bash"], ["shell", "bash"], ["
 
 const roots = ["src/content", "content"];
 const found = new Map(); // lang -> Set<file>
+let scanned = 0;         // how many markdown files were actually read
 
 function walk(dir) {
   let entries;
@@ -26,7 +27,7 @@ function walk(dir) {
   for (const name of entries) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) walk(p);
-    else if (name.endsWith(".md") || name.endsWith(".mdx")) scan(p);
+    else if (name.endsWith(".md") || name.endsWith(".mdx")) { scanned++; scan(p); }
   }
 }
 
@@ -51,8 +52,21 @@ function scan(file) {
 
 for (const r of roots) walk(r);
 
+// An empty scan is not a pass.
+//
+// walk() swallows a missing directory, so if the content root ever moves this script happily
+// reported "all languages registered" having read nothing at all — success it had not earned,
+// which is the exact failure it exists to catch. Verified by moving src/content aside: it
+// printed the success line and exited 0.
+if (scanned === 0) {
+  console.error(`\n\x1b[31m\u2717 scanned NO markdown files under ${roots.join(" or ")}.\x1b[0m`);
+  console.error("   The content root has moved, or the sync wrote somewhere else. This check is");
+  console.error("   blind until that is fixed — treating it as a pass would be worse than useless.\n");
+  process.exit(1);
+}
+
 if (found.size === 0) {
-  console.log(`code fences: all languages registered (${[...REGISTERED].join(", ")})`);
+  console.log(`code fences: ${scanned} files scanned, all languages registered (${[...REGISTERED].join(", ")})`);
 } else {
   console.warn("\n\x1b[33m⚠ unregistered code-fence language(s) — these render WITHOUT highlighting:\x1b[0m");
   for (const [lang, files] of found) {

@@ -151,6 +151,20 @@ const group = (list) => {
   return [...byMsg.entries()].sort((a, b) => b[1].length - a[1].length);
 };
 
+// Zero pages is not a clean audit.
+//
+// With an empty dist/ this printed "audited 0 prerendered pages" then "clean" and exited 0 —
+// success it had not earned, from the script whose whole job is to catch exactly that. postbuild
+// runs prerender && audit, so a prerender CRASH stops the chain; a prerender that succeeds while
+// writing nothing (an empty article loader, a changed output path) does not, and this was the
+// only thing standing between that and a deploy.
+if (files.length === 0) {
+  console.error(`\n\x1b[31m\u2717 audited NO pages — dist/ has no HTML in it.\x1b[0m`);
+  console.error("   Either prerender wrote nothing, or it wrote somewhere else. Reporting this");
+  console.error("   as clean would let an empty site deploy.\n");
+  process.exit(1);
+}
+
 console.log(`audited ${files.length} prerendered pages\n`);
 for (const [label, list] of [["ERROR", errors], ["WARN", warns]]) {
   if (!list.length) continue;
