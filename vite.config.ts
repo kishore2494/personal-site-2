@@ -18,6 +18,22 @@ export default defineConfig({
     },
   },
   build: {
+    // Keep the WebGL layer out of the FIRST PAINT, which is what App.tsx already intends:
+    //   // Heavy WebGL layer — loaded after first paint so the UI is instant.
+    //   const SceneCanvas = lazy(() => import("@/three/SceneCanvas"));
+    //
+    // The lazy() was doing its job and the BUILD was undoing it. manualChunks pulls three and
+    // r3f into named chunks, and Vite then emits <link rel="modulepreload"> for them in
+    // index.html — so the browser fetched 251 kB gzip of 3D engine as part of the initial load,
+    // competing with the critical path, on a site whose whole point is being fast and indexed.
+    //
+    // Filtering them out of the preload list leaves the manual chunks alone (so they stay
+    // separately cacheable, and the names check-bundle-size.mjs budgets stay valid) and lets
+    // them load when the lazy import actually runs.
+    modulePreload: {
+      resolveDependencies: (_filename: string, deps: string[]) =>
+        deps.filter((d) => !/(^|\/)(three|r3f)-[A-Za-z0-9_-]+\.js$/.test(d)),
+    },
     target: "es2020",
     chunkSizeWarningLimit: 1400,
     rollupOptions: {

@@ -48,6 +48,32 @@ const measured = files.map((f) => ({
   kb: Math.round(gzipSync(readFileSync(join(DIR, f)), { level: 9 }).length / 1024),
 })).sort((a, b) => b.kb - a.kb);
 
+// Chunks that must NOT be on the critical path.
+//
+// App.tsx says "Heavy WebGL layer — loaded after first paint so the UI is instant" and lazily
+// imports SceneCanvas. The lazy() was doing its job; the BUILD was undoing it. manualChunks put
+// three and r3f into named chunks, Vite emitted <link rel="modulepreload"> for them, and the
+// browser fetched 251 kB gzip of 3D engine as part of the initial load.
+//
+// vite.config.ts filters them out of the preload list now. This makes sure that stays true:
+// the fix lives in a build option that is easy to drop while everything still builds, and the
+// only visible symptom would be a slower first paint nobody measures.
+const DEFERRED_CHUNKS = [/^three-/, /^r3f-/];
+try {
+  const html = readFileSync("dist/index.html", "utf8");
+  const preloaded = [...html.matchAll(/<link[^>]+rel="modulepreload"[^>]+href="[^"]*\/assets\/([^"]+)"/g)]
+    .map((m) => m[1]);
+  const wrong = preloaded.filter((f) => DEFERRED_CHUNKS.some((re) => re.test(f)));
+  if (wrong.length) {
+    console.error(`\n\x1b[31m\u2717 the homepage preloads chunks that are meant to load after first paint: ${wrong.join(", ")}\x1b[0m`);
+    console.error("   App.tsx lazily imports these on purpose. Check build.modulePreload in");
+    console.error("   vite.config.ts — dropping that filter silently puts them back on the critical path.\n");
+    process.exit(1);
+  }
+} catch (e) {
+  if (e?.code !== "ENOENT") throw e;   // no dist/index.html: the page checks below will say so
+}
+
 const total = measured.reduce((n, m) => n + m.kb, 0);
 const over = [];
 
