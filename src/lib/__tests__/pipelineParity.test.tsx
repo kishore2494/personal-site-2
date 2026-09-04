@@ -40,6 +40,10 @@ const CASES: Record<string, string> = {
   "body starting at h3 (must be promoted)": "### Deep\n\nText.\n\n#### Deeper\n\nMore.\n",
   "mixed depths": "## A\n\n# B\n\n### C\n",
   "no headings at all": "Just a paragraph of prose.\n",
+  // The real Medium shape: # for sections, ### for points, ## never typed. The old shift rule
+  // turned this into h2/h4 and the audit flagged it on five live articles.
+  "gapped levels, the common Medium shape": "# Section\n\nText.\n\n### Point\n\nMore.\n\n# Section Two\n\n### Point Two\n",
+  "gapped, starting deep": "### Deep\n\nText.\n\n# Shallow\n\n##### Deepest\n",
 };
 
 describe("heading outline agrees across both pipelines", () => {
@@ -50,6 +54,16 @@ describe("heading outline agrees across both pipelines", () => {
       expect(b, "app pipeline disagrees with the crawler pipeline").toEqual(a);
       // And the rule itself: nothing in a body may be an h1, since the page template owns it.
       expect(a.every((l) => l >= 2), `body emitted an h1: ${a.join(",")}`).toBe(true);
+      // No skipped levels. The page's own h1 sits above these, so the shallowest must be h2 and
+      // each distinct depth below it must be reachable one step at a time — a jump straight to
+      // h4 is what the audit flags and what the old shift rule produced.
+      const distinct = [...new Set(a)].sort((x, y) => x - y);
+      if (distinct.length) {
+        expect(distinct[0], `outline starts at h${distinct[0]}, leaving a gap under the title`).toBe(2);
+        distinct.forEach((lvl, i) => {
+          expect(lvl, `heading outline skips a level: ${distinct.join(" -> ")}`).toBe(2 + i);
+        });
+      }
     });
   }
 });

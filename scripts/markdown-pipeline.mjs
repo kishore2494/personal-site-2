@@ -45,27 +45,35 @@ export const md = new MarkdownIt({
   },
 });
 
-// Normalise body heading levels so an article's shallowest heading becomes <h2>.
+// Normalise body heading levels so an article gets a real outline under the page title.
 //
 // The page template emits the title as the single <h1>. Articles sync in from Medium, where
 // `#` is how you write a SECTION heading, so bodies arrive full of <h1>s — one article had 34,
-// leaving crawlers and screen readers with no outline. But some articles start at `##`, so a
-// blind one-level demotion would push those to h3 and jump straight from h1, which is its own
-// a11y complaint. Shifting by (2 - shallowest) handles both, and promotes an article that
-// starts at `###`.
+// leaving crawlers and screen readers with no outline.
 //
-// Counterpart: src/lib/rehypeDemoteHeadings.ts. Both must implement the same rule.
+// This used to shift every heading by (2 - shallowest). That put the top section at h2 but kept
+// the GAPS: Medium authors use `#` and `###` and essentially never type `##`, so {1,3} became
+// {2,4} and the outline jumped h2 -> h4. The audit flagged that on five articles.
+//
+// The distinct levels present are now RANKED onto consecutive levels from h2 up: {1,3} -> {2,3},
+// {2,4} -> {2,3}, {1,2,4} -> {2,3,4}. Relative nesting is preserved exactly and the gaps are
+// gone. Ranks clamp at h6.
+//
+// Counterpart: src/lib/rehypeDemoteHeadings.ts. Both must implement the same rule, and
+// src/lib/__tests__/pipelineParity.test.tsx renders the same markdown through both to check it.
+export function normaliseLevels(levels) {
+  const distinct = [...new Set(levels)].sort((a, b) => a - b);
+  return new Map(distinct.map((lvl, i) => [lvl, Math.min(6, 2 + i)]));
+}
+
 export function renderBody(src) {
   const tokens = md.parse(src, {});
   const levels = tokens.filter((t) => t.type === "heading_open").map((t) => Number(t.tag.slice(1)));
   if (levels.length) {
-    const shift = 2 - Math.min(...levels);
-    if (shift !== 0) {
-      for (const t of tokens) {
-        if (t.type === "heading_open" || t.type === "heading_close") {
-          const lvl = Math.min(6, Math.max(2, Number(t.tag.slice(1)) + shift));
-          t.tag = `h${lvl}`;
-        }
+    const rank = normaliseLevels(levels);
+    for (const t of tokens) {
+      if (t.type === "heading_open" || t.type === "heading_close") {
+        t.tag = `h${rank.get(Number(t.tag.slice(1)))}`;
       }
     }
   }

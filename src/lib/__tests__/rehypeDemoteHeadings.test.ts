@@ -44,3 +44,28 @@ describe("rehypeDemoteHeadings", () => {
     expect(levels("just a paragraph")).toEqual([]);
   });
 });
+
+// Gapped level sets are the case the old shift rule got wrong, and the case the existing tests
+// happened not to cover: every one of them used contiguous levels, where shifting and ranking
+// agree, so the bug shipped with a green suite. Medium authors reach for `#` and `###` and
+// essentially never type `##`, so this is the common shape, not an edge case.
+describe("gapped heading levels are closed up, not just shifted", () => {
+  it("{1,3} becomes {2,3}, not {2,4}", () => {
+    expect(levels("# Section\n\n### Point\n\n# Section Two\n\n### Point Two\n")).toEqual([2, 3, 2, 3]);
+  });
+
+  it("{2,4} becomes {2,3}", () => {
+    expect(levels("## Alpha\n\n#### Deep\n\n## Beta\n")).toEqual([2, 3, 2]);
+  });
+
+  it("{1,2,4} becomes {2,3,4}, keeping three distinct depths", () => {
+    expect(levels("# A\n\n## B\n\n#### C\n")).toEqual([2, 3, 4]);
+  });
+
+  it("relative nesting is preserved — deeper stays deeper", () => {
+    const got = levels("### Deep\n\n# Shallow\n\n##### Deepest\n");
+    expect(got).toEqual([3, 2, 4]);
+    expect(got[1]).toBeLessThan(got[0]);    // the h1 outranks the h3 that preceded it
+    expect(got[2]).toBeGreaterThan(got[0]);
+  });
+});

@@ -53,7 +53,10 @@ if (langKeys[0] === "") problems.push("could not parse any registered grammars �
 
 // ── 2. heading normalisation, declared twice ──────────────────────────────────
 const clientHeadings = read("src/lib/rehypeDemoteHeadings.ts");
-const rule = /2 - Math\.min/;
+// The shared rule marker. Was /2 - Math\.min/ while headings were SHIFTED; it is now a rank
+// map, and this had to move with it — a guard that greps for a vanished string reports
+// "implemented on neither side" and looks like a pass if you only read the exit code.
+const rule = /normaliseLevels/;
 const inPrerender = rule.test(prerender);
 const inClient = rule.test(clientHeadings);
 if (inPrerender !== inClient) {
@@ -61,7 +64,7 @@ if (inPrerender !== inClient) {
     "heading normalisation is implemented on only one side:\n" +
     `     scripts/markdown-pipeline.mjs: ${inPrerender ? "yes" : "NO"}\n` +
     `     src/lib/rehypeDemoteHeadings.ts: ${inClient ? "yes" : "NO"}\n` +
-    "     Both must shift headings so the shallowest body heading becomes h2."
+    "     Both must rank heading levels onto consecutive levels starting at h2."
   );
 }
 
@@ -84,5 +87,5 @@ if (problems.length === 0) {
   console.warn("\n\x1b[33m⚠ the two markdown pipelines have drifted:\x1b[0m");
   for (const p of problems) console.warn(`   ${p}`);
   console.warn("   Whatever renders in the app must also render for crawlers — see the");
-  console.warn("   dual-pipeline note in scripts/prerender.mjs.\n");
+  console.warn("   dual-pipeline note in scripts/markdown-pipeline.mjs.\n");
 }
