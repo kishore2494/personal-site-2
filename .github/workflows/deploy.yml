@@ -26,6 +26,10 @@ jobs:
           cache: npm
 
       - run: npm ci
+      # Unit tests for the two markdown plugins. They were verified once by hand when written
+      # and by nothing afterwards, which is how the heading rule nearly shipped as a blind
+      # one-level demotion.
+      - run: npm test
       - run: npm run build
 
       # The audit runs inside postbuild too, but WITHOUT --strict, so it reports and exits 0.

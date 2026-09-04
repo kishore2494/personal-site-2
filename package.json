@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "Kishore Kumar A — immersive cosmos + AI portfolio (Site 2)",
+  "description": "Kishore Kumar A \u2014 immersive cosmos + AI portfolio (Site 2)",
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/check-pipeline-parity.mjs && node scripts/check-code-languages.mjs && node scripts/gen-sitemap.mjs",
@@ -13,7 +13,8 @@
     "dashboard": "node dashboard/server.mjs",
     "lint": "tsc --noEmit",
     "audit": "node scripts/audit-dist.mjs --strict",
-    "verify:live": "node scripts/verify-live.mjs"
+    "verify:live": "node scripts/verify-live.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",
@@ -42,6 +43,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vitest": "^4.1.11"
   }
 }
