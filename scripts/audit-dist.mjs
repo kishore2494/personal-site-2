@@ -141,6 +141,47 @@ for (const file of files) {
   }
 }
 
+// The sitemap and dist/ must describe the same site.
+//
+// They are generated from the same loader, so they agree today — 45 pages, 44 URLs, and the one
+// difference is 404.html, which correctly does not belong in a sitemap. Nothing checked that,
+// and both directions of drift are costly for a site whose whole purpose is being indexed:
+//   a sitemap URL with no page  -> crawlers are pointed at a 404
+//   a page absent from the sitemap -> it exists and is never indexed
+//
+// This is a structural failure, not a content one, so it fails the build outright rather than
+// waiting for the --fail-systemic threshold. A newly synced article appears in BOTH (same
+// loader), so content cannot trip it — which is what keeps the "a sync must never block a
+// deploy" rule intact.
+const SITEMAP_EXCLUDED = new Set(["/404.html"]);   // real pages that must NOT be advertised
+
+try {
+  const xml = readFileSync(join(DIST, "sitemap.xml"), "utf8");
+  const norm = (u) => (u.replace(/^https?:\/\/[^/]+/, "").replace(BASE.replace(/\/$/, ""), "").replace(/\/$/, "") || "/");
+  const listed = new Set([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => norm(m[1])));
+  const built = new Set(files.map((f) => norm("/" + relative(DIST, f).replace(/index\.html$/, ""))));
+
+  const unbuilt = [...listed].filter((u) => !built.has(u));
+  const unlisted = [...built].filter((u) => !listed.has(u) && !SITEMAP_EXCLUDED.has(u));
+
+  if (unbuilt.length || unlisted.length) {
+    console.error(`\n\x1b[31m\u2717 the sitemap and dist/ disagree\x1b[0m`);
+    for (const u of unbuilt) console.error(`   listed but not built: ${u}  — crawlers would get a 404`);
+    for (const u of unlisted) console.error(`   built but not listed: ${u}  — the page will not be indexed`);
+    console.error("   Both are generated from the same loader, so this means one of them changed\n" +
+                  "   without the other. Add a deliberate exclusion to SITEMAP_EXCLUDED if the page\n" +
+                  "   genuinely should not be advertised.\n");
+    process.exit(1);
+  }
+  console.log(`sitemap: ${listed.size} urls, all built; ${built.size} pages, all listed (${SITEMAP_EXCLUDED.size} excluded by design)`);
+} catch (e) {
+  if (e?.code === "ENOENT") {
+    console.error("\n\x1b[31m\u2717 dist/sitemap.xml is missing — prebuild did not generate it.\x1b[0m\n");
+    process.exit(1);
+  }
+  throw e;
+}
+
 const group = (list) => {
   const byMsg = new Map();
   for (const { file, msg } of list) {
