@@ -5,12 +5,9 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import MarkdownIt from "markdown-it";
 import { execSync } from "node:child_process";
-import hljs from "highlight.js/lib/core";
-import hljsPython from "highlight.js/lib/languages/python";
-import hljsBash from "highlight.js/lib/languages/bash";
 import { getArticles, getProjects } from "./data.mjs";
+import { renderBody } from "./markdown-pipeline.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
@@ -18,64 +15,6 @@ const SITE = "https://kishore2494.github.io/personal-site-2";
 const BASE = "/personal-site-2";
 const NAME = "Kishore Kumar A";
 
-// Highlight code fences at PRERENDER time.
-//
-// Until now dist/ shipped zero hljs classes: highlighting only happened client-side, after
-// React hydrated. So a crawler saw unstyled code, and so did the reader until the JS landed
-// — on the article route that meant waiting for a 356 kB chunk before the page looked right.
-//
-// Only python and bash are registered, matching src/lib/rehypeHighlightMinimal.ts. lowlight
-// (what the client uses) is built on highlight.js, so both pipelines emit identical hljs-*
-// markup and the pre- and post-hydration renders agree. scripts/check-code-languages.mjs
-// guards the language list for both.
-//
-// Coverage: 8 highlighted code blocks across dist/ — exactly the 8 fences in the content
-// (5 python, 3 bash), plus 89 token spans inside them. (The commit that added this said
-// "0 -> 93"; that number came from a grep for `class="hljs` which also matches
-// `class="hljs-comment"`, so it conflated wrappers with tokens. 8 is the real block count.)
-hljs.registerLanguage("python", hljsPython);
-hljs.registerLanguage("bash", hljsBash);
-
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  highlight(code, lang) {
-    if (!lang || !hljs.getLanguage(lang)) return "";   // unknown -> markdown-it escapes it plainly
-    const out = hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
-    // Emit the wrapper ourselves so the class list matches the client's exactly.
-    return `<pre><code class="hljs language-${lang}">${out}</code></pre>`;
-  },
-});
-
-// Normalise body heading levels so an article's shallowest heading becomes <h2>.
-//
-// The template below emits the title as the page's single <h1>. Articles sync in from
-// Medium, where `#` is how you write a SECTION heading, so bodies arrive full of <h1>s —
-// one article had 34, leaving crawlers and screen readers with no outline. But some
-// articles start at `##` instead, so a blind one-level demotion would push those to h3 and
-// jump straight from h1, which is its own a11y complaint. Shifting by (2 - shallowest)
-// handles both, and promotes an article that starts at `###`.
-//
-// This must live here as well as in src/lib/rehypeDemoteHeadings.ts because prerender uses
-// a SEPARATE markdown pipeline (markdown-it) from the app (react-markdown) — the HTML a
-// crawler actually receives is produced entirely by this file.
-function renderBody(src) {
-  const tokens = md.parse(src, {});
-  const levels = tokens.filter((t) => t.type === "heading_open").map((t) => Number(t.tag.slice(1)));
-  if (levels.length) {
-    const shift = 2 - Math.min(...levels);
-    if (shift !== 0) {
-      for (const t of tokens) {
-        if (t.type === "heading_open" || t.type === "heading_close") {
-          const lvl = Math.min(6, Math.max(2, Number(t.tag.slice(1)) + shift));
-          t.tag = `h${lvl}`;
-        }
-      }
-    }
-  }
-  return md.renderer.render(tokens, md.options, {});
-}
 const template = readFileSync(join(dist, "index.html"), "utf8");
 
 // Stamp the commit this build came from into every page.

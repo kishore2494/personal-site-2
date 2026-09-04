@@ -23,7 +23,9 @@ const read = (p) => readFileSync(p, "utf8");
 const problems = [];
 
 // ── 1. registered highlight.js grammars, declared in three places ──────────────
-const prerender = read("scripts/prerender.mjs");
+// The markdown-it half now lives in its own module so it can be imported and tested;
+// prerender.mjs just calls renderBody(). Read the pipeline module, not the script.
+const prerender = read("scripts/markdown-pipeline.mjs");
 const clientPlugin = read("src/lib/rehypeHighlightMinimal.ts");
 const langGuard = read("scripts/check-code-languages.mjs");
 
@@ -35,7 +37,7 @@ const guardLangs = set([...(langGuard.match(/const REGISTERED = new Set\(\[([^\]
   .matchAll(/"([a-z0-9+#-]+)"/g)].map((m) => m[1]));
 
 const langSources = {
-  "scripts/prerender.mjs": prerenderLangs,
+  "scripts/markdown-pipeline.mjs": prerenderLangs,
   "src/lib/rehypeHighlightMinimal.ts": clientLangs,
   "scripts/check-code-languages.mjs": guardLangs,
 };
@@ -57,7 +59,7 @@ const inClient = rule.test(clientHeadings);
 if (inPrerender !== inClient) {
   problems.push(
     "heading normalisation is implemented on only one side:\n" +
-    `     scripts/prerender.mjs: ${inPrerender ? "yes" : "NO"}\n` +
+    `     scripts/markdown-pipeline.mjs: ${inPrerender ? "yes" : "NO"}\n` +
     `     src/lib/rehypeDemoteHeadings.ts: ${inClient ? "yes" : "NO"}\n` +
     "     Both must shift headings so the shallowest body heading becomes h2."
   );
