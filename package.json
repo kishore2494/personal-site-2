@@ -8,7 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/check-lockfile.mjs && node scripts/check-pipeline-parity.mjs && node scripts/check-code-languages.mjs && node scripts/gen-sitemap.mjs",
     "build": "tsc --noEmit && vite build",
-    "postbuild": "node scripts/prerender.mjs && node scripts/audit-dist.mjs --fail-systemic",
+    "postbuild": "node scripts/prerender.mjs && node scripts/audit-dist.mjs --fail-systemic && node scripts/check-bundle-size.mjs",
     "preview": "vite preview",
     "dashboard": "node dashboard/server.mjs",
     "lint": "tsc --noEmit",
