@@ -21,6 +21,7 @@ const BASE = (readFileSync("vite.config.ts", "utf8")
   .match(/const\s+BASE\s*=\s*["'`]([^"'`]+)["'`]/)?.[1] ?? "/")
   .replace(/\/$/, "");
 const strict = process.argv.includes("--strict");
+const failSystemic = process.argv.includes("--fail-systemic");
 const errors = [];
 const warns = [];
 const err = (file, msg) => errors.push({ file, msg });
@@ -163,3 +164,29 @@ for (const [label, list] of [["ERROR", errors], ["WARN", warns]]) {
 }
 if (!errors.length && !warns.length) console.log("clean");
 if (strict && errors.length) process.exit(1);
+
+// --fail-systemic: fail the build only for errors that look like a TEMPLATE regression.
+//
+// Deploys deliberately do not block on audit findings. Articles sync in automatically, and a
+// stale live site is worse than an unaltered SEO warning — one badly-formed import must never
+// be able to stop a deploy. That reasoning is sound and it is why postbuild runs without
+// --strict.
+//
+// It leaves one thing uncovered, and it happens to be the worst case for a site whose whole
+// purpose is being indexed: a change to the page template that breaks canonicals, or the lang
+// attribute, or the title, on EVERY page at once. Nothing blocked that, and nothing would have
+// noticed until the rankings moved.
+//
+// The two are easy to tell apart by how far the error spreads. One bad article is one page out
+// of forty-five; a broken template is all of them. So an error kind occurring on more than half
+// the audited pages fails the build, and anything narrower is reported and allowed through.
+if (failSystemic && errors.length) {
+  const threshold = Math.max(2, Math.ceil(files.length / 2));
+  const systemic = group(errors).filter(([, items]) => items.length >= threshold);
+  if (systemic.length) {
+    console.error(`\n\x1b[31m✗ ${systemic.length} error kind(s) affect ${threshold}+ of ${files.length} pages — that is the template, not one article:\x1b[0m`);
+    for (const [kind, items] of systemic) console.error(`   ${kind}  on ${items.length}/${files.length} pages`);
+    console.error("   A single malformed article is reported and allowed through; this is not that.\n");
+    process.exit(1);
+  }
+}
