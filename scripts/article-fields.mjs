@@ -41,10 +41,51 @@ export function toArray(v) {
  * the 32 articles is currently a valid ISO date, so this is a trap rather than a live bug —
  * recorded here, and pinned by a test, so that changing it is a decision rather than an accident.
  */
+const EPOCH = "1970-01-01";
+const pad = (n) => String(n).padStart(2, "0");
+
+/** Is YYYY-MM-DD a real calendar day? Catches 2026-13-45 and 2025-02-30, which are ISO-SHAPED
+ *  and still not dates — a shape check alone would pass them straight into structured data. */
+function realDay(y, m, day) {
+  if (m < 1 || m > 12 || day < 1 || day > 31) return false;
+  const probe = new Date(Date.UTC(y, m - 1, day));
+  return probe.getUTCFullYear() === y && probe.getUTCMonth() === m - 1 && probe.getUTCDate() === day;
+}
+
+/** Normalise a frontmatter date to YYYY-MM-DD.
+ *
+ *  This used to be `String(d).slice(0, 10)`, which TRUNCATES: "Sep 5, 2026" became "Sep 5, 202"
+ *  and went into the sitemap's lastmod and the JSON-LD datePublished exactly like that. An
+ *  invalid date is not a cosmetic problem there — Google drops the Article rich result over it,
+ *  and nothing in the build ever said a word.
+ *
+ *  Timezones decide the answer here, so each input kind is handled on its own terms:
+ *    - a Date comes from js-yaml parsing a bare `date: 2026-06-20`, which it reads as UTC
+ *      midnight, so its UTC parts are the day the author wrote.
+ *    - a human-written string ("Sep 5, 2026") is parsed in LOCAL time, so its LOCAL parts are
+ *      the day the author meant. Taking UTC parts would publish the 4th east of UTC.
+ *
+ *  Anything unparseable falls back to the epoch, and scripts/check-article-dates.mjs fails the
+ *  build on it — a silent 1970 in a sitemap is a claim, and a false one.
+ */
 export function toISO(d) {
-  if (!d) return "1970-01-01";
-  if (d instanceof Date) return d.toISOString().slice(0, 10);
-  return String(d).slice(0, 10);
+  if (!d) return EPOCH;
+
+  if (d instanceof Date) {
+    if (Number.isNaN(+d)) return EPOCH;
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+
+  const s = String(d).trim();
+  const iso = /^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(s);
+  if (iso) {
+    const [, y, m, day] = iso.map(Number);
+    return realDay(y, m, day) ? `${iso[1]}-${iso[2]}-${iso[3]}` : EPOCH;
+  }
+
+  const parsed = new Date(s);
+  if (Number.isNaN(+parsed)) return EPOCH;
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`;
 }
 
 export function deriveExcerpt(excerpt, body) {

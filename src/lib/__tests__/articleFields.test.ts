@@ -51,14 +51,33 @@ describe("toISO", () => {
     expect(toISO(new Date("2024-05-20T00:00:00Z"))).toBe("2024-05-20");
   });
 
-  it("TRUNCATES rather than validating — pinned so changing it is a decision", () => {
-    // Not an endorsement. A frontmatter date written any other way lands in the sitemap and the
-    // JSON-LD as nonsense, and a missing one claims the article is from 1970. All 32 articles
-    // currently carry valid ISO dates, so this is a trap rather than a live bug — but the
-    // behaviour is documented here rather than discovered later by a crawler.
-    expect(toISO("Sep 5, 2026")).toBe("Sep 5, 202");
+  it("understands a human-written date instead of truncating it", () => {
+    // This used to return "Sep 5, 202" — String(d).slice(0, 10) — and that string went into the
+    // sitemap's lastmod and the JSON-LD datePublished verbatim. Google drops the Article rich
+    // result over an invalid date, and nothing in the build said a word. The old behaviour was
+    // pinned by a test "so changing it is a decision"; this is the decision.
+    expect(toISO("Sep 5, 2026")).toBe("2026-09-05");
+    expect(toISO("20 May 2024")).toBe("2024-05-20");
+  });
+
+  it("gives the same day in every timezone", () => {
+    // A human-written date is parsed in LOCAL time, so its local parts are the day the author
+    // meant; taking UTC parts would publish the 4th for anyone east of UTC. A Date from js-yaml
+    // is UTC midnight, so its UTC parts are that day. Getting either backwards is an off-by-one
+    // that only appears on someone else's machine.
+    expect(toISO("Sep 5, 2026")).toBe("2026-09-05");
+    expect(toISO(new Date(Date.UTC(2026, 8, 5)))).toBe("2026-09-05");
+  });
+
+  it("refuses a date that is not a date, rather than passing it on", () => {
+    // ISO-SHAPED is not the same as valid: a shape check alone lets 2026-13-45 through.
+    expect(toISO("2026-13-45")).toBe("1970-01-01");
+    expect(toISO("2025-02-30")).toBe("1970-01-01");
+    expect(toISO("not a date")).toBe("1970-01-01");
+    expect(toISO(new Date("nonsense"))).toBe("1970-01-01");
     expect(toISO(undefined)).toBe("1970-01-01");
     expect(toISO("")).toBe("1970-01-01");
+    // The epoch is a fallback, not an answer — check-article-dates.mjs fails the build on it.
   });
 });
 
