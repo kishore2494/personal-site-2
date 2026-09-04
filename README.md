@@ -21,10 +21,33 @@ subtly shifts mood as you move between pages.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # type-check + production build → dist/
-npm run preview  # preview the production build
+npm run dev         # http://localhost:5173
+npm run build       # type-check + production build → dist/
+npm run preview     # preview the production build
+npm run test        # unit tests (markdown pipelines, heading rules)
+npm run lint        # tsc --noEmit
+npm run audit       # SEO/a11y audit of dist/, fails on any error
+npm run verify:live # prove the live site is serving this commit
+npm run dashboard   # local content dashboard
 ```
+
+### What the build checks by itself
+
+`build` is wrapped by `prebuild` and `postbuild`, so these run on every build and in CI. They
+exist because each one corresponds to something that actually went wrong once:
+
+| check | what it stops |
+|---|---|
+| `check-lockfile.mjs` | a lockfile that installs here and fails on CI (platform-locked deps not marked optional) |
+| `check-pipeline-parity.mjs` | the prerender and React markdown pipelines declaring different rules |
+| `check-code-languages.mjs` | a code fence in a language nothing registered — renders unhighlighted, silently |
+| `gen-sitemap.mjs` | — generates `dist/sitemap.xml` |
+| `prerender.mjs` | — writes a real HTML file per route |
+| `audit-dist.mjs --fail-systemic` | an error on MOST pages (a broken template), and a sitemap that disagrees with `dist/` |
+| `check-bundle-size.mjs` | a bundle regression — the article route was cut 499→356 kB and nothing held it there |
+
+A single bad article is reported but never blocks a deploy: content syncs in on its own, and a
+stale live site is worse than one unhighlighted code fence.
 
 ## Deploy to GitHub Pages
 
