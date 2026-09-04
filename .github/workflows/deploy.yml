@@ -28,6 +28,25 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # The audit runs inside postbuild too, but WITHOUT --strict, so it reports and exits 0.
+      # That is deliberate: content arrives here automatically from the Medium/Site-1 sync, and
+      # a synced article must never be able to block a deploy — a stale live site is worse than
+      # an SEO warning. But a check that cannot fail is easy to stop reading, so run the strict
+      # pass here as well and put the result in the job summary, where it is visible without
+      # gating anything.
+      - name: SEO/a11y audit (reported, non-blocking)
+        continue-on-error: true
+        run: |
+          echo '### dist audit' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if npm run --silent audit >> "$GITHUB_STEP_SUMMARY" 2>&1; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo '✅ no errors' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo '⚠️ **errors found — deploy continued, but fix these**' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/configure-pages@v5
         with:
           # Auto-enable GitHub Pages (build type = GitHub Actions) on first run,
