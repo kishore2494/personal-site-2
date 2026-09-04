@@ -100,6 +100,22 @@ if (inDataLegacy !== inContentLegacy) {
   );
 }
 
+// ── 4b. the article metadata rules, shared not copied ────────────────────────
+// COSMOS/BUILD, deriveTheme, toArray, toISO and deriveExcerpt were implemented in BOTH loaders,
+// character for character. They decide the sitemap date, the JSON-LD date, the meta description
+// and the theme — so a divergence tells crawlers and visitors different things about the same
+// article, which is the failure this file exists to prevent.
+for (const f of ["scripts/data.mjs", "src/content/index.ts"]) {
+  const src = read(f);
+  if (!/from ["'][^"']*article-fields\.mjs["']/.test(src)) {
+    problems.push(
+      `${f} no longer imports the shared article rules from scripts/article-fields.mjs.\n` +
+      "     A local copy of deriveTheme/toISO/deriveExcerpt is how the sitemap date and the\n" +
+      "     rendered date stop agreeing."
+    );
+  }
+}
+
 // ── 5. the head rules, which must be shared rather than merely equal ──────────
 // prerender.mjs and Seo.tsx both build canonical + og:image. They drifted once (trailing
 // slash), so they now import one implementation. This checks they still do, because a
@@ -116,7 +132,7 @@ for (const f of ["scripts/prerender.mjs", "src/components/Seo.tsx"]) {
 }
 
 if (problems.length === 0) {
-  console.log("pipeline parity: prerender and app agree (grammars, headings, link strip, legacy retarget, shared head rules)");
+  console.log("pipeline parity: prerender and app agree (grammars, headings, link strip, legacy retarget, article fields, shared head rules)");
 } else {
   console.warn("\n\x1b[33m⚠ the two markdown pipelines have drifted:\x1b[0m");
   for (const p of problems) console.warn(`   ${p}`);

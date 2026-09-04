@@ -7,29 +7,13 @@ import { dirname, join } from "node:path";
 import { transform } from "esbuild";
 import fm from "front-matter";
 import { retargetLegacy } from "./site-urls.mjs";
+import { deriveTheme, toArray, toISO, deriveExcerpt } from "./article-fields.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const COSMOS = ["science", "physics", "philosophy", "space", "cosmology", "society"];
-const BUILD = ["tutorial", "coding", "python", "local llm", "software development", "career", "personal"];
 
-function deriveTheme(categories) {
-  const lower = categories.map((c) => String(c).toLowerCase());
-  if (lower.some((c) => COSMOS.includes(c))) return "Cosmos";
-  if (lower.some((c) => BUILD.includes(c))) return "Build";
-  return "AI";
-}
 
-function toArray(v) {
-  if (!v) return [];
-  return Array.isArray(v) ? v : [v];
-}
 
-function toISO(d) {
-  if (!d) return "1970-01-01";
-  if (d instanceof Date) return d.toISOString().slice(0, 10);
-  return String(d).slice(0, 10);
-}
 
 // Medium's export leaves inert anchors behind: `[](https://miro.medium.com/...)` with no
 // text and no image. They render as a link with no accessible name, which is a real a11y
@@ -40,17 +24,6 @@ const stripEmptyLinks = (md) => md.replace(/\[\]\([^)\s]*\)/g, "");
 // public/, and resolve today only because site 1 is still up serving copies. See
 // retargetLegacy() in scripts/site-urls.mjs. Mirrored in src/content/index.ts.
 
-function deriveExcerpt(excerpt, body) {
-  const e = String(excerpt || "").replace(/^\*+|\*+$/g, "").trim();
-  if (e) return e;
-  const firstPara = body
-    .replace(/^#.*$/gm, "")
-    .split("\n")
-    .map((l) => l.trim())
-    .find((l) => l.length > 40);
-  const clean = String(firstPara || "").replace(/[#*_>`!\[\]]/g, "");
-  return clean.length > 180 ? clean.slice(0, clean.lastIndexOf(" ", 180)) + "…" : clean;
-}
 
 export function getArticles() {
   const dir = join(root, "src/content/articles");

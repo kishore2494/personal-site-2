@@ -8,6 +8,7 @@
 import fm from "front-matter";
 import { projects as projectData, type Project } from "@/data/projects";
 import { retargetLegacy } from "../../scripts/site-urls.mjs";
+import { deriveTheme, toArray, toISO, deriveExcerpt } from "../../scripts/article-fields.mjs";
 
 export type Theme = "AI" | "Cosmos" | "Build";
 
@@ -37,38 +38,10 @@ type RawAttrs = {
   draft?: boolean;
 };
 
-const COSMOS = ["science", "physics", "philosophy", "space", "cosmology", "society"];
-const BUILD = ["tutorial", "coding", "python", "local llm", "software development", "career", "personal"];
 
-function deriveTheme(categories: string[]): Theme {
-  const lower = categories.map((c) => c.toLowerCase());
-  if (lower.some((c) => COSMOS.includes(c))) return "Cosmos";
-  if (lower.some((c) => BUILD.includes(c))) return "Build";
-  return "AI";
-}
 
-function toArray(v?: string[] | string): string[] {
-  if (!v) return [];
-  return Array.isArray(v) ? v : [v];
-}
 
-function toISO(d?: string | Date): string {
-  if (!d) return "1970-01-01";
-  if (d instanceof Date) return d.toISOString().slice(0, 10);
-  return String(d).slice(0, 10);
-}
 
-function deriveExcerpt(excerpt: string | undefined, body: string): string {
-  const e = (excerpt ?? "").trim();
-  if (e) return e.replace(/^\*+|\*+$/g, "");
-  const firstPara = body
-    .replace(/^#.*$/gm, "")
-    .split("\n")
-    .map((l) => l.trim())
-    .find((l) => l.length > 40);
-  const clean = (firstPara ?? "").replace(/[#*_>`!\[\]]/g, "");
-  return clean.length > 180 ? clean.slice(0, clean.lastIndexOf(" ", 180)) + "…" : clean;
-}
 
 // Eagerly import every article's raw markdown at build time.
 const files = import.meta.glob("./articles/*.md", {
