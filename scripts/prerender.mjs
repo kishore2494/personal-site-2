@@ -117,7 +117,10 @@ function page({ path, title, description, type = "website", image, jsonLd, conte
     .replace(/<meta\s+name="twitter:[^"]*"[^>]*>/gi, "")
     .replace(/<link\s+rel="canonical"[^>]*>/i, "");
 
-  const canonical = SITE + (path === "/" ? "/" : path);
+  // Trailing slash on purpose: Pages serves these as directories and 301s the slashless
+  // form, so a canonical without it pointed at a URL that redirects — which is exactly what
+  // a canonical is supposed to resolve, not add to.
+  const canonical = SITE + (path === "/" ? "/" : path + "/");
   const ogImage = image || `${SITE}/og.png`;
   const fullTitle = path === "/" ? title : `${title} · Kishore`;
 

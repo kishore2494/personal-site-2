@@ -6,6 +6,10 @@ import { dirname, join } from "node:path";
 import { getArticles, getProjects } from "./data.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+// GitHub Pages serves these routes as DIRECTORIES — /projects/ — and 301-redirects the
+// slashless form. Emitting /projects made every sitemap entry except the home page a
+// redirect, so a crawler took an extra hop on 43 of 44 URLs. Sitemaps should list the URL
+// that is actually served.
 const SITE_URL = "https://kishore2494.github.io/personal-site-2";
 const staticRoutes = ["/", "/projects", "/articles", "/about", "/resume", "/contact"];
 
@@ -25,7 +29,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
 ${urls
   .map(
     ({ loc, lastmod }) =>
-      `  <url>\n    <loc>${SITE_URL}${loc === "/" ? "/" : loc}</loc>\n    <lastmod>${lastmod || today}</lastmod>\n    <changefreq>${loc === "/" ? "weekly" : "monthly"}</changefreq>\n    <priority>${loc === "/" ? "1.0" : "0.7"}</priority>\n  </url>`,
+      `  <url>\n    <loc>${SITE_URL}${loc === "/" ? "/" : loc + "/"}</loc>\n    <lastmod>${lastmod || today}</lastmod>\n    <changefreq>${loc === "/" ? "weekly" : "monthly"}</changefreq>\n    <priority>${loc === "/" ? "1.0" : "0.7"}</priority>\n  </url>`,
   )
   .join("\n")}
 </urlset>

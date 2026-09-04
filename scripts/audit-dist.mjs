@@ -128,7 +128,13 @@ for (const file of files) {
   if (!meta("og:title")) err(rel, `no og:title`);
   if (!meta("og:description")) warn(rel, `no og:description`);
   if (!meta("og:image")) warn(rel, `no og:image`);
-  if (!/<link[^>]*rel\s*=\s*"canonical"/i.test(html)) warn(rel, `no canonical link`);
+  const canon = html.match(/<link[^>]*rel\s*=\s*"canonical"[^>]*href\s*=\s*"([^"]*)"/i)?.[1];
+  if (!canon) warn(rel, `no canonical link`);
+  else if (!canon.endsWith("/")) {
+    // Pages serves directory URLs and 301s the slashless form, so a canonical without the
+    // slash names a URL that redirects rather than the one served.
+    err(rel, `canonical omits the trailing slash and so points at a redirect: ${canon}`);
+  }
   if ((isArticle || isProject) && !/application\/ld\+json/i.test(html)) {
     warn(rel, `no JSON-LD structured data`);
   }
