@@ -14,21 +14,19 @@ import Comets from "./Comets";
 import Effects from "./Effects";
 import Rig from "./Rig";
 import { STATIONS } from "./scene-state";
-
-type Quality = "high" | "medium" | "low";
-
-function detectQuality(): Quality {
-  if (typeof window === "undefined") return "high";
-  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  const narrow = window.innerWidth < 760;
-  const cores = navigator.hardwareConcurrency ?? 8;
-  if (reduced || cores <= 4) return "low";
-  if (narrow) return "medium";
-  return "high";
-}
+import { sceneMotion, prefersReducedMotion } from "../lib/motionPreference";
 
 export default function SceneCanvas() {
-  const quality = useMemo(detectQuality, []);
+  // sceneMotion() decides both, so "reduce motion" cannot end up meaning "fewer particles, same
+  // animation" again — see src/lib/motionPreference.ts.
+  const { quality, frameloop } = useMemo(
+    () => sceneMotion({
+      reduced: prefersReducedMotion(),
+      width: typeof window === "undefined" ? 1280 : window.innerWidth,
+      cores: (typeof navigator === "undefined" ? 8 : navigator.hardwareConcurrency) ?? 8,
+    }),
+    [],
+  );
 
   const cfg = {
     high: { stars: 4200, nodes: 54, pulses: 48, disk: 2800, debris: 14, comets: 4, field: 72, fieldPulses: 28, bloom: true, lite: false, dpr: [1, 2] as [number, number] },
@@ -39,6 +37,7 @@ export default function SceneCanvas() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
       <Canvas
+        frameloop={frameloop}
         dpr={cfg.dpr}
         camera={{ position: [0, 0.5, 15], fov: 55, near: 0.1, far: 260 }}
         gl={{

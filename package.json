@@ -6,7 +6,7 @@
   "description": "Kishore Kumar A \u2014 immersive cosmos + AI portfolio (Site 2)",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/check-lockfile.mjs && node scripts/check-readme.mjs && node scripts/check-pipeline-parity.mjs && node scripts/check-code-languages.mjs && node scripts/gen-sitemap.mjs",
+    "prebuild": "node scripts/check-lockfile.mjs && node scripts/check-readme.mjs && node scripts/check-pipeline-parity.mjs && node scripts/check-motion-wiring.mjs && node scripts/check-code-languages.mjs && node scripts/gen-sitemap.mjs",
     "build": "tsc --noEmit && vite build",
     "postbuild": "node scripts/prerender.mjs && node scripts/audit-dist.mjs --fail-systemic && node scripts/check-bundle-size.mjs",
     "preview": "vite preview",
