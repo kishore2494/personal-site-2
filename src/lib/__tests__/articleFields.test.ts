@@ -5,7 +5,7 @@
 // which is what the heading rule and the head tags looked like right up until they drifted.
 
 import { describe, it, expect } from "vitest";
-import { deriveTheme, toArray, toISO, deriveExcerpt, COSMOS, BUILD } from "../../../scripts/article-fields.mjs";
+import { deriveTheme, toArray, toISO, deriveExcerpt, articleJsonLd, COSMOS, BUILD } from "../../../scripts/article-fields.mjs";
 
 describe("deriveTheme", () => {
   it("routes by category, case-insensitively", () => {
@@ -107,5 +107,49 @@ describe("deriveExcerpt", () => {
   it("returns empty rather than throwing when there is nothing to use", () => {
     expect(deriveExcerpt(undefined, "")).toBe("");
     expect(deriveExcerpt(undefined, "# only a heading")).toBe("");
+  });
+});
+
+describe("articleJsonLd", () => {
+  const SITE = "https://kishore2494.github.io/personal-site-2";
+  const base = {
+    title: "A Title", excerpt: "A summary.", date: "2025-03-07", slug: "a-title",
+    tags: ["ai"], categories: ["Machine Learning"],
+  };
+
+  it("always carries an absolute image, even with no cover", () => {
+    // Google lists image as REQUIRED for Article rich results. Both builders dropped the
+    // property when an article had no cover, so 15 of 26 articles shipped structured data that
+    // was present, valid, and disqualifying.
+    const withCover = articleJsonLd({ ...base, cover: "https://cdn.example.com/a.jpg" }, SITE, "K");
+    expect(withCover.image).toBe("https://cdn.example.com/a.jpg");
+
+    for (const cover of [undefined, "", null as unknown as string]) {
+      const out = articleJsonLd({ ...base, cover }, SITE, "K");
+      expect(out.image, `cover=${JSON.stringify(cover)} produced no image`).toBeTruthy();
+      expect(String(out.image)).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("carries every property Google requires", () => {
+    const ld = articleJsonLd(base, SITE, "K") as Record<string, unknown>;
+    for (const k of ["@context", "@type", "headline", "image", "datePublished", "author"]) {
+      expect(ld[k], `missing ${k}`).toBeTruthy();
+    }
+    expect(ld["@type"]).toBe("BlogPosting");
+    expect(ld.mainEntityOfPage).toBe(`${SITE}/articles/a-title`);
+  });
+
+  it("does not invent a dateModified", () => {
+    // Recommended by Google, absent from the frontmatter. Filling it with datePublished or a
+    // file mtime would tell crawlers the article was revised on a day nothing happened — a
+    // missing recommendation costs less than a false fact.
+    expect(articleJsonLd(base, SITE, "K")).not.toHaveProperty("dateModified");
+  });
+
+  it("survives an article with no tags or categories", () => {
+    const ld = articleJsonLd({ ...base, tags: undefined, categories: undefined }, SITE, "K");
+    expect(ld.keywords).toBe("");
+    expect(ld.articleSection).toBe("");
   });
 });

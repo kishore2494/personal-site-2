@@ -20,6 +20,14 @@
 import { readFileSync } from "node:fs";
 
 const read = (p) => readFileSync(p, "utf8");
+
+// Source with comments removed, for the checks that ask "is this actually CALLED?".
+//
+// Not a nicety. The JSON-LD check below matched `articleJsonLd(` inside a comment I had written
+// two lines above the call — "see articleJsonLd() in scripts/article-fields.mjs" — so deleting
+// the real call left the guard perfectly happy. A grep that a comment can satisfy is a grep that
+// proves nothing, which is the failure this whole file exists to prevent.
+const code = (p) => read(p).replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 const problems = [];
 
 // ── 1. registered highlight.js grammars, declared in three places ──────────────
@@ -105,6 +113,18 @@ if (inDataLegacy !== inContentLegacy) {
 // character for character. They decide the sitemap date, the JSON-LD date, the meta description
 // and the theme — so a divergence tells crawlers and visitors different things about the same
 // article, which is the failure this file exists to prevent.
+// The article's structured data is built for crawlers and again after hydration. Both used to
+// drop `image` when there was no cover, which Google treats as disqualifying for rich results.
+for (const f of ["scripts/prerender.mjs", "src/pages/ArticleDetail.tsx"]) {
+  if (!/articleJsonLd\s*\(/.test(code(f))) {
+    problems.push(
+      `${f} no longer builds its JSON-LD with articleJsonLd().\n` +
+      "     A local copy is how the crawler and the hydrated page end up describing the same\n" +
+      "     article differently — and how the required `image` property goes missing again."
+    );
+  }
+}
+
 for (const f of ["scripts/data.mjs", "src/content/index.ts"]) {
   const src = read(f);
   if (!/from ["'][^"']*article-fields\.mjs["']/.test(src)) {
@@ -121,7 +141,7 @@ for (const f of ["scripts/data.mjs", "src/content/index.ts"]) {
 // slash), so they now import one implementation. This checks they still do, because a
 // re-inlined copy is exactly how the drift comes back.
 for (const f of ["scripts/prerender.mjs", "src/components/Seo.tsx"]) {
-  const src = read(f);
+  const src = code(f);
   if (!/canonicalFor\s*\(/.test(src) || !/absoluteImage\s*\(/.test(src)) {
     problems.push(
       `${f} no longer uses the shared head rules from scripts/site-urls.mjs.\n` +

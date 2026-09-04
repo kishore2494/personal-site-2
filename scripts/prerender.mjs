@@ -9,6 +9,7 @@ import { execSync } from "node:child_process";
 import { getArticles, getProjects } from "./data.mjs";
 import { renderBody } from "./markdown-pipeline.mjs";
 import { canonicalFor, absoluteImage } from "./site-urls.mjs";
+import { articleJsonLd } from "./article-fields.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
@@ -193,19 +194,7 @@ for (const a of articles) {
     description: a.excerpt,
     type: "article",
     image: a.cover || undefined,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: a.title,
-      description: a.excerpt,
-      datePublished: a.date,
-      image: a.cover || undefined,
-      keywords: a.tags.join(", "),
-      articleSection: a.categories.join(", "),
-      author: { "@type": "Person", name: NAME, url: SITE },
-      publisher: { "@type": "Person", name: NAME },
-      mainEntityOfPage: `${SITE}/articles/${a.slug}`,
-    },
+    jsonLd: articleJsonLd(a, SITE, NAME),
     contentHtml: `<p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#34d3ff">${esc(a.theme)} · ${esc(fmtDate(a.date))}</p><h1 style="font-size:2rem;font-weight:700;color:#fff;margin-top:.5rem">${esc(a.title)}</h1>${cover}<div style="margin-top:1rem">${bodyHtml}</div>`,
   });
   write(`/articles/${a.slug}`, html);

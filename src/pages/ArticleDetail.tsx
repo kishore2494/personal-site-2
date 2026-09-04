@@ -8,6 +8,7 @@ import Seo from "@/components/Seo";
 import Markdown from "@/components/Markdown";
 import ArticleCard from "@/components/ArticleCard";
 import NotFound from "./NotFound";
+import { articleJsonLd } from "../../scripts/article-fields.mjs";
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -23,19 +24,9 @@ export default function ArticleDetail() {
     .filter((a) => a.slug !== article.slug)
     .slice(0, 3);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: article.title,
-    description: article.excerpt,
-    datePublished: article.date,
-    image: article.cover,
-    keywords: article.tags.join(", "),
-    articleSection: article.categories.join(", "),
-    author: { "@type": "Person", name: site.name, url: site.url },
-    publisher: { "@type": "Person", name: site.name },
-    mainEntityOfPage: `${site.url}/articles/${article.slug}`,
-  };
+  // Shared with scripts/prerender.mjs so the crawler and the hydrated page cannot describe
+  // the same article differently — see articleJsonLd() in scripts/article-fields.mjs.
+  const jsonLd = articleJsonLd(article, site.url, site.name);
 
   return (
     <article className="relative z-10">

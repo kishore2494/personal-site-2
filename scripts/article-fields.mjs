@@ -13,6 +13,8 @@
 // Behaviour is unchanged from the copies it replaces. That is checked the strongest way
 // available: the whole of dist/ is byte-identical before and after.
 
+import { absoluteImage } from "./site-urls.mjs";
+
 /** Categories that make an article read as Cosmos or Build; anything else is AI. */
 export const COSMOS = ["science", "physics", "philosophy", "space", "cosmology", "society"];
 export const BUILD = ["tutorial", "coding", "python", "local llm", "software development", "career", "personal"];
@@ -55,4 +57,36 @@ export function deriveExcerpt(excerpt, body) {
     .find((l) => l.length > 40);
   const clean = (firstPara ?? "").replace(/[#*_>`!\[\]]/g, "");
   return clean.length > 180 ? clean.slice(0, clean.lastIndexOf(" ", 180)) + "…" : clean;
+}
+
+/**
+ * The BlogPosting structured data for an article.
+ *
+ * Built twice before this — once in scripts/prerender.mjs for crawlers, once in
+ * src/pages/ArticleDetail.tsx after hydration — and both dropped `image` when an article had no
+ * cover. Google lists image as REQUIRED for Article rich results, so 15 of 26 articles were
+ * ineligible: the structured data was present, valid, and disqualifying.
+ *
+ * The head already solved this. absoluteImage() falls back to the site card and returns an
+ * absolute URL, which is what JSON-LD wants too, so the same helper decides both and an article
+ * cannot end up advertising one image to a crawler and another to schema.org.
+ *
+ * dateModified is deliberately absent. Google recommends it, the frontmatter has no such field,
+ * and inventing one — datePublished, or the file's mtime — would tell crawlers an article was
+ * revised on a day nothing happened. A missing recommendation costs less than a false fact.
+ */
+export function articleJsonLd(a, site, name) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: a.title,
+    description: a.excerpt,
+    datePublished: a.date,
+    image: absoluteImage(site, a.cover),
+    keywords: (a.tags ?? []).join(", "),
+    articleSection: (a.categories ?? []).join(", "),
+    author: { "@type": "Person", name, url: site },
+    publisher: { "@type": "Person", name },
+    mainEntityOfPage: `${site}/articles/${a.slug}`,
+  };
 }
